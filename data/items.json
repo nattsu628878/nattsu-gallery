@@ -1,0 +1,75 @@
+[
+  {
+    "id": "2025-01-picture-sample",
+    "type": "picture",
+    "title": "サンプル画像",
+    "summary": "テスト用のサンプル画像です",
+    "tags": ["test", "sample"],
+    "date": "2025-01-15",
+    "thumbnail": "/thumbnails/picture-sample.jpg",
+    "assets": {
+      "image": "/thumbnails/picture-sample.jpg"
+    }
+  },
+  {
+    "id": "2025-01-movie-sample",
+    "type": "movie",
+    "title": "サンプル動画",
+    "summary": "テスト用のサンプル動画です",
+    "tags": ["test", "sample"],
+    "date": "2025-01-15",
+    "thumbnail": "/thumbnails/movie-sample.jpg",
+    "assets": {
+      "video": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    }
+  },
+  {
+    "id": "2025-01-music-sample",
+    "type": "music",
+    "title": "サンプル音楽",
+    "summary": "テスト用のサンプル音楽です",
+    "tags": ["test", "sample"],
+    "date": "2025-01-15",
+    "thumbnail": "/thumbnails/music-sample.jpg",
+    "assets": {
+      "audio": "https://dl.dropboxusercontent.com/s/xxxxx/sample.mp3"
+    }
+  },
+  {
+    "id": "2025-01-write-sample",
+    "type": "write",
+    "title": "サンプル文章",
+    "summary": "テスト用のサンプル文章です",
+    "tags": ["test", "sample"],
+    "date": "2025-01-15",
+    "thumbnail": "/thumbnails/write-sample.jpg",
+    "assets": {
+      "content": "/content/write-sample.md"
+    }
+  },
+  {
+    "id": "2025-01-software-sample",
+    "type": "software",
+    "title": "サンプルソフトウェア",
+    "summary": "テスト用のサンプルソフトウェアです",
+    "tags": ["test", "sample"],
+    "date": "2025-01-15",
+    "thumbnail": "/thumbnails/software-sample.jpg",
+    "assets": {
+      "repo": "https://github.com/username/repo",
+      "demo": "https://example.com/demo"
+    }
+  },
+  {
+    "id": "2025-01-hardware-sample",
+    "type": "hardware",
+    "title": "サンプルハードウェア",
+    "summary": "テスト用のサンプルハードウェアです",
+    "tags": ["test", "sample"],
+    "date": "2025-01-15",
+    "thumbnail": "/thumbnails/hardware-sample.jpg",
+    "assets": {
+      "description": "ハードウェアの説明文"
+    }
+  }
+]

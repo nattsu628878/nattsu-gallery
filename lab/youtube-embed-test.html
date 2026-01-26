@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube 埋め込み再生検証</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 2rem;
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        .section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #fafafa;
+            border-radius: 6px;
+            border-left: 4px solid #ff0000;
+        }
+        .section h2 {
+            margin-bottom: 1rem;
+            color: #ff0000;
+        }
+        .input-group {
+            margin: 1rem 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+        button {
+            padding: 0.75rem 1.5rem;
+            background: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 0.5rem;
+        }
+        button:hover {
+            background: #cc0000;
+        }
+        .media-container {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 */
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            background: #000;
+            border-radius: 4px;
+        }
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .info {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #e3f2fd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .info.success {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .info.error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+        .info.warning {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+        }
+        .url-converter {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #fff3e0;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .url-converter code {
+            display: block;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 3px;
+            word-break: break-all;
+        }
+        .embed-code {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .embed-code pre {
+            margin: 0;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+        .test-results {
+            margin-top: 2rem;
+        }
+        .test-item {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+        .test-item h3 {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        .status.success {
+            background: #4caf50;
+            color: white;
+        }
+        .status.error {
+            background: #f44336;
+            color: white;
+        }
+        .status.pending {
+            background: #ff9800;
+            color: white;
+        }
+        .method-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        .tab {
+            padding: 0.5rem 1rem;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .tab.active {
+            background: #ff0000;
+            color: white;
+        }
+        .method-content {
+            display: none;
+        }
+        .method-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 YouTube 埋め込み再生検証</h1>
+        
+        <div class="section">
+            <h2>📝 使い方</h2>
+            <ol style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                <li>YouTubeの動画URLを取得（様々な形式に対応）</li>
+                <li>下の入力欄に貼り付け</li>
+                <li>「変換してテスト」ボタンをクリック</li>
+                <li>埋め込み方法を選択して再生を確認</li>
+            </ol>
+            <div class="info warning" style="margin-top: 1rem;">
+                <strong>⚠️ 注意:</strong> YouTubeの埋め込みには、動画の埋め込み設定が有効である必要があります。一部の動画は埋め込みが無効になっている場合があります。<br><br>
+                <strong>埋め込み設定の確認方法:</strong><br>
+                1. YouTube Studioにアクセス<br>
+                2. 動画を選択 → 「詳細」タブ<br>
+                3. 「配信とプライバシー設定」で「埋め込みを許可」を確認
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎬 YouTube動画埋め込みテスト</h2>
+            <div class="input-group">
+                <label for="youtubeUrl">YouTube動画URL（任意の形式）:</label>
+                <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=xxxxx または https://youtu.be/xxxxx">
+                <button onclick="testYouTube()">変換してテスト</button>
+            </div>
+            
+            <div id="youtubeResult" class="media-container" style="display: none;">
+                <div class="url-converter">
+                    <strong>抽出された動画ID:</strong>
+                    <code id="videoId"></code>
+                </div>
+                
+                <div class="method-tabs">
+                    <button class="tab active" onclick="switchMethod('iframe')">iframe埋め込み（推奨）</button>
+                    <button class="tab" onclick="switchMethod('api')">YouTube Player API</button>
+                    <button class="tab" onclick="switchMethod('direct')">直接URL（参考）</button>
+                </div>
+
+                <!-- iframe埋め込み -->
+                <div id="method-iframe" class="method-content active">
+                    <div class="info success">
+                        ✅ <strong>iframe埋め込み（推奨）</strong><br>
+                        最もシンプルで確実な方法。YouTubeが提供する標準的な埋め込み方法です。<br>
+                        <strong>エラーコード153が発生する場合:</strong> iframe埋め込みはAPIに依存しないため、より安定して動作します。
+                    </div>
+                    <div class="embed-code">
+                        <strong>埋め込みコード:</strong>
+                        <pre id="iframeCode"></pre>
+                    </div>
+                    <div id="iframeStatus" class="info" style="display: none; margin-top: 1rem;"></div>
+                    <div class="video-wrapper" id="iframeContainer"></div>
+                    <div id="iframeFallback" style="display: none; margin-top: 1rem;">
+                        <div class="info error">
+                            <strong>❌ 埋め込みが無効です</strong><br>
+                            この動画は埋め込みが無効になっているため、直接YouTubeで視聴する必要があります。
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <a id="youtubeLink" href="#" target="_blank" style="display: inline-block; padding: 0.75rem 1.5rem; background: #ff0000; color: white; text-decoration: none; border-radius: 4px;">
+                                ▶ YouTubeで視聴
+                            </a>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <strong>サムネイル画像:</strong><br>
+                            <img id="thumbnailPreview" src="" alt="サムネイル" style="max-width: 100%; border-radius: 4px; margin-top: 0.5rem;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- YouTube Player API -->
+                <div id="method-api" class="method-content">
+                    <div class="info">
+                        ℹ️ <strong>YouTube Player API</strong><br>
+                        より高度な制御が可能。再生、一時停止、シークなどの操作ができます。
+                    </div>
+                    <div class="embed-code">
+                        <strong>実装例:</strong>
+                        <pre id="apiCode"></pre>
+                    </div>
+                    <div class="video-wrapper" id="apiContainer"></div>
+                </div>
+
+                <!-- 直接URL（参考） -->
+                <div id="method-direct" class="method-content">
+                    <div class="info warning">
+                        ⚠️ <strong>直接URL（参考）</strong><br>
+                        通常はiframeが必要です。直接URLでの再生は制限があります。
+                    </div>
+                    <div class="embed-code">
+                        <strong>直接URL（通常は動作しません）:</strong>
+                        <pre id="directUrl"></pre>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <strong>埋め込みが無効な場合の代替表示:</strong>
+                        <pre style="margin-top: 0.5rem; padding: 1rem; background: #f5f5f5; border-radius: 4px; font-size: 12px;">&lt;!-- サムネイル + リンク表示 --&gt;
+&lt;a href="https://www.youtube.com/watch?v=${currentVideoId || 'VIDEO_ID'}" target="_blank"&gt;
+  &lt;img src="https://img.youtube.com/vi/${currentVideoId || 'VIDEO_ID'}/maxresdefault.jpg" alt="動画サムネイル"&gt;
+  &lt;div&gt;▶ YouTubeで視聴&lt;/div&gt;
+&lt;/a&gt;</pre>
+                    </div>
+                </div>
+
+                <div id="youtubeInfo" class="info" style="margin-top: 1rem;"></div>
+            </div>
+        </div>
+
+        <div class="section test-results">
+            <h2>📊 検証結果サマリー</h2>
+            <div id="testSummary"></div>
+        </div>
+    </div>
+
+    <!-- YouTube Player API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        let ytPlayer = null;
+        let currentVideoId = null;
+
+        // YouTube URLから動画IDを抽出
+        function extractVideoId(url) {
+            if (!url) return null;
+
+            // 様々なYouTube URL形式に対応
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+                /youtube\.com\/watch\?.*v=([^&\n?#]+)/
+            ];
+
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match && match[1]) {
+                    return match[1];
+                }
+            }
+
+            return null;
+        }
+
+        // メソッド切り替え
+        function switchMethod(method) {
+            // タブの切り替え
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.method-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`method-${method}`).classList.add('active');
+
+            // 動画IDがある場合は再描画
+            if (currentVideoId) {
+                if (method === 'iframe') {
+                    renderIframe(currentVideoId);
+                } else if (method === 'api') {
+                    renderAPI(currentVideoId);
+                }
+            }
+        }
+
+        // iframe埋め込み
+        function renderIframe(videoId) {
+            const embedUrl = `https://www.youtube.com/embed/${videoId}?rel=0`;
+            const iframeCode = `<iframe width="560" height="315" src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            
+            document.getElementById('iframeCode').textContent = iframeCode;
+            
+            // ステータスとフォールバックをリセット
+            document.getElementById('iframeStatus').style.display = 'none';
+            document.getElementById('iframeFallback').style.display = 'none';
+            
+            // iframeを作成
+            const container = document.getElementById('iframeContainer');
+            container.innerHTML = iframeCode;
+            
+            // iframeのエラー検出を試みる
+            const iframe = container.querySelector('iframe');
+            if (iframe) {
+                // タイムアウトで埋め込み状態をチェック
+                setTimeout(() => {
+                    checkIframeEmbedStatus(videoId);
+                }, 2000);
+                
+                // iframeのloadイベント
+                iframe.onload = () => {
+                    // ロード完了後、少し待ってからチェック
+                    setTimeout(() => {
+                        checkIframeEmbedStatus(videoId);
+                    }, 1000);
+                };
+            }
+        }
+        
+        // iframeの埋め込み状態をチェック
+        function checkIframeEmbedStatus(videoId) {
+            // YouTubeの埋め込みが無効な場合、iframe内にエラーメッセージが表示される
+            // 実際の検証は難しいため、代替手段を提示
+            const statusDiv = document.getElementById('iframeStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'info warning';
+            statusDiv.innerHTML = `
+                <strong>⚠️ 埋め込み状態の確認</strong><br>
+                iframeが正常に読み込まれているか確認してください。<br>
+                エラーメッセージが表示される場合は、埋め込みが無効になっている可能性があります。
+            `;
+        }
+        
+        // 埋め込みが無効な場合の代替表示
+        function showIframeFallback(videoId) {
+            const fallbackDiv = document.getElementById('iframeFallback');
+            const youtubeLink = document.getElementById('youtubeLink');
+            const thumbnailPreview = document.getElementById('thumbnailPreview');
+            
+            youtubeLink.href = `https://www.youtube.com/watch?v=${videoId}`;
+            thumbnailPreview.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            thumbnailPreview.onerror = function() {
+                this.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+            };
+            
+            fallbackDiv.style.display = 'block';
+        }
+
+        // YouTube Player API
+        function renderAPI(videoId) {
+            const container = document.getElementById('apiContainer');
+            container.innerHTML = '<div id="youtube-player"></div>';
+            
+            const apiCode = `// YouTube Player API使用例
+const tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+const firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+let player;
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('youtube-player', {
+    height: '315',
+    width: '560',
+    videoId: '${videoId}',
+    playerVars: {
+      'playsinline': 1
+    },
+    events: {
+      'onReady': onPlayerReady
+    }
+  });
+}
+
+function onPlayerReady(event) {
+  // 再生可能
+}`;
+            
+            document.getElementById('apiCode').textContent = apiCode;
+
+            // 既存のプレーヤーを破棄
+            if (ytPlayer) {
+                ytPlayer.destroy();
+            }
+
+            // 新しいプレーヤーを作成
+            if (typeof YT !== 'undefined' && YT.Player) {
+                ytPlayer = new YT.Player('youtube-player', {
+                    height: '315',
+                    width: '100%',
+                    videoId: videoId,
+                    playerVars: {
+                        'playsinline': 1,
+                        'rel': 0
+                    },
+                    events: {
+                        'onReady': onPlayerReady,
+                        'onError': onPlayerError
+                    }
+                });
+            } else {
+                // APIがまだ読み込まれていない場合
+                document.getElementById('apiContainer').innerHTML = '<div class="info warning">YouTube Player APIの読み込みを待っています...</div>';
+            }
+        }
+
+        function onPlayerReady(event) {
+            const infoDiv = document.getElementById('youtubeInfo');
+            infoDiv.className = 'info success';
+            infoDiv.innerHTML = '✅ YouTube Player API: プレーヤーの準備が完了しました。再生可能です。';
+            addTestResult('YouTube Player API', true, currentVideoId);
+        }
+
+        function onPlayerError(event) {
+            const infoDiv = document.getElementById('youtubeInfo');
+            const errorCode = event.data;
+            let errorMessage = '❌ YouTube Player API: エラーが発生しました。';
+            
+            // エラーコードに応じたメッセージ
+            let solutionMessage = '';
+            switch(errorCode) {
+                case 2:
+                    errorMessage = '❌ 無効な動画IDです。';
+                    solutionMessage = '動画IDが正しいか確認してください。';
+                    break;
+                case 5:
+                    errorMessage = '❌ HTML5プレーヤーのエラーです。';
+                    solutionMessage = 'ブラウザの互換性を確認してください。';
+                    break;
+                case 100:
+                    errorMessage = '❌ 動画が見つかりません。削除されたか、非公開になっている可能性があります。';
+                    solutionMessage = '動画が存在するか、公開設定を確認してください。';
+                    break;
+                case 101:
+                case 150:
+                    errorMessage = '❌ 動画の埋め込みが無効になっています。この動画は埋め込み再生できません。';
+                    solutionMessage = 'YouTube Studioで動画の埋め込み設定を確認・有効化してください。';
+                    break;
+                case 153:
+                    errorMessage = '❌ エラーコード153: 動画の再生が制限されています。';
+                    solutionMessage = `
+                        <strong>考えられる原因:</strong><br>
+                        1. 地域制限（特定の地域でのみ視聴可能）<br>
+                        2. 年齢制限（18歳以上のみ視聴可能）<br>
+                        3. 著作権制限（一部の地域で制限）<br>
+                        4. YouTube Player APIの読み込みタイミングの問題<br><br>
+                        <strong>推奨される対処法:</strong><br>
+                        ✅ <strong>iframe埋め込みを使用する</strong>（APIを使わない方法）<br>
+                        iframe埋め込みは、APIに依存しないため、より安定して動作します。<br>
+                        上記の「iframe埋め込み（推奨）」タブで動作を確認してください。
+                    `;
+                    break;
+                default:
+                    errorMessage = `❌ エラーコード: ${errorCode}。`;
+                    solutionMessage = `
+                        動画の埋め込みが無効になっている可能性があります。<br>
+                        YouTube Studioで動画の埋め込み設定を確認してください。<br><br>
+                        <strong>推奨:</strong> iframe埋め込み（APIを使わない方法）を試してください。
+                    `;
+            }
+            
+            infoDiv.className = 'info error';
+            infoDiv.innerHTML = `
+                ${errorMessage}<br><br>
+                ${solutionMessage}
+            `;
+            addTestResult('YouTube Player API', false, currentVideoId, `エラーコード: ${errorCode}`);
+            
+            // エラーコード153の場合は、iframe埋め込みを推奨
+            if (errorCode === 153) {
+                const iframeInfo = document.getElementById('iframeStatus');
+                if (iframeInfo) {
+                    iframeInfo.style.display = 'block';
+                    iframeInfo.className = 'info success';
+                    iframeInfo.innerHTML = `
+                        <strong>💡 解決策:</strong> エラーコード153が発生した場合、YouTube Player APIではなく、<strong>iframe埋め込み</strong>を使用することを推奨します。<br>
+                        iframe埋め込みは、APIに依存しないため、より安定して動作します。
+                    `;
+                }
+            } else {
+                // その他のエラーの場合はフォールバック表示
+                showIframeFallback(currentVideoId);
+            }
+        }
+
+        // YouTubeテスト
+        function testYouTube() {
+            const inputUrl = document.getElementById('youtubeUrl').value.trim();
+            if (!inputUrl) {
+                alert('URLを入力してください');
+                return;
+            }
+
+            const videoId = extractVideoId(inputUrl);
+            if (!videoId) {
+                alert('有効なYouTube URLを入力してください');
+                return;
+            }
+
+            currentVideoId = videoId;
+            const resultDiv = document.getElementById('youtubeResult');
+            const videoIdDiv = document.getElementById('videoId');
+            const infoDiv = document.getElementById('youtubeInfo');
+
+            resultDiv.style.display = 'block';
+            videoIdDiv.textContent = videoId;
+
+            // iframe埋め込みをデフォルトで表示
+            renderIframe(videoId);
+            
+            // 直接URLを表示
+            document.getElementById('directUrl').textContent = `https://www.youtube.com/watch?v=${videoId}`;
+
+            // API埋め込みも準備
+            renderAPI(videoId);
+
+            infoDiv.className = 'info success';
+            infoDiv.innerHTML = '✅ 動画IDの抽出に成功しました。埋め込み方法を選択して再生を確認してください。';
+            addTestResult('YouTube動画ID抽出', true, videoId);
+        }
+
+        // テスト結果を記録
+        const testResults = [];
+        function addTestResult(type, success, videoId, error = null) {
+            testResults.push({
+                type,
+                success,
+                videoId,
+                error,
+                timestamp: new Date().toLocaleTimeString()
+            });
+            updateTestSummary();
+        }
+
+        function updateTestSummary() {
+            const summaryDiv = document.getElementById('testSummary');
+            if (testResults.length === 0) {
+                summaryDiv.innerHTML = '<p style="color: #999;">まだテストが実行されていません。</p>';
+                return;
+            }
+
+            let html = '';
+            testResults.forEach((result, index) => {
+                const statusClass = result.success ? 'success' : 'error';
+                const statusText = result.success ? '✅ 成功' : '❌ 失敗';
+                html += `
+                    <div class="test-item">
+                        <h3>
+                            ${result.type} 
+                            <span class="status ${statusClass}">${statusText}</span>
+                            <span style="font-size: 12px; color: #999; font-weight: normal;">(${result.timestamp})</span>
+                        </h3>
+                        <p style="font-size: 12px; color: #666; margin-top: 0.5rem;">
+                            動画ID: ${result.videoId}
+                        </p>
+                        ${result.error ? `<p style="color: #f44336; font-size: 12px; margin-top: 0.5rem;">エラー: ${result.error}</p>` : ''}
+                    </div>
+                `;
+            });
+            summaryDiv.innerHTML = html;
+        }
+
+        // Enterキーでテスト実行
+        document.getElementById('youtubeUrl').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') testYouTube();
+        });
+
+        // YouTube Player APIの準備完了を待つ
+        function onYouTubeIframeAPIReady() {
+            if (currentVideoId && document.getElementById('method-api').classList.contains('active')) {
+                renderAPI(currentVideoId);
+            }
+        }
+    </script>
+</body>
+</html>
