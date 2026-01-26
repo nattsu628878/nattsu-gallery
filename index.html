@@ -8,25 +8,50 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>nattsu Gallery</h1>
-            <p class="subtitle">マルチメディア活動記録データベース</p>
-        </header>
+      <header>
+        <h1>Gallery</h1>
+        <div class="header-controls">
+          <div class="view-toggle">
+            <button id="gridViewBtn" class="view-btn active">Grid</button>
+            <button id="tableViewBtn" class="view-btn">Table</button>
+          </div>
+          <div class="settings">
+            <div class="setting-item">
+              <label for="imageSize">Size</label>
+              <input type="range" id="imageSize" min="150" max="400" value="200" step="10">
+              <span id="imageSizeValue">200</span>
+            </div>
+            <div class="setting-item">
+              <label for="backgroundColor">Background</label>
+              <input type="color" id="backgroundColor" value="#f5f5f5">
+            </div>
+            <div class="setting-item">
+              <label for="fontSize">Font</label>
+              <input type="range" id="fontSize" min="0.5" max="1.5" value="1" step="0.1">
+              <span id="fontSizeValue">1.0</span>
+            </div>
+          </div>
+        </div>
+      </header>
         
         <main>
-            <div class="stats" id="stats">
-                <div class="stat-item">
-                    <span class="stat-value">-</span>
-                    <span class="stat-label">アイテム</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-value">-</span>
-                    <span class="stat-label">タイプ</span>
-                </div>
-            </div>
-            
             <div class="gallery" id="gallery">
                 <p>読み込み中...</p>
+            </div>
+            <div class="table-view" id="tableView" style="display: none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Thumbnail</th>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Tags</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
             </div>
         </main>
     </div>

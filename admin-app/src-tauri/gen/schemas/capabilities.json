@@ -1,0 +1,1 @@
+{"default":{"identifier":"default","description":"Capability for the main window","local":true,"windows":["main"],"permissions":["core:default","core:path:default","dialog:default","fs:default",{"identifier":"fs:scope","allow":["$APPDATA/**","$DOCUMENT/**","$DOWNLOAD/**","$HOME/**","$RESOURCE/**","$TEMP/**","$DESKTOP/**"]}]}}

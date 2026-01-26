@@ -4,7 +4,7 @@
 
 ## 概要
 
-自分の活動（文章、映像、画像、音楽、ソフトウェア、ハードウェアなど）を一つのデータベースとして横断的に一覧・探索できるホームページ。
+自分の活動（文章、映像、画像、音楽、開発など）を一つのデータベースとして横断的に一覧・探索できるホームページ。
 
 **シンプルな実装**: Vanilla JavaScript + HTML + CSSで実装。
 
@@ -24,7 +24,7 @@
 ```json
 {
   "id": "unique-id",
-  "type": "picture|movie|music|write|software|hardware",
+  "type": "picture|movie|music|write|dev",
   "title": "タイトル",
   "summary": "説明",
   "tags": ["tag1", "tag2"],
@@ -67,6 +67,7 @@ npx http-server -p 8000
 ├── content/
 │   └── *.md            # 文章コンテンツ（Markdown）
 ├── article.html        # 記事表示ページ（MarkdownをHTMLに変換）
+├── admin.html         # 記事追加ページ（ローカル環境専用）
 └── thumbnails/         # サムネイル画像
 ```
 
@@ -76,8 +77,7 @@ npx http-server -p 8000
 - **movie**: YouTube埋め込み or リンク
 - **music**: 音声プレーヤー
 - **write**: 記事へのリンク
-- **software**: GitHub/Demoリンク
-- **hardware**: 説明文
+- **dev**: GitHub/Demoリンク
 
 ## 開発メモ
 

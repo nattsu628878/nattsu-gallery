@@ -41,127 +41,84 @@ function createMediaCard(item) {
     };
     thumbnail.appendChild(img);
     
-    // コンテンツ
-    const content = document.createElement('div');
-    content.className = 'content';
+    // オーバーレイテキスト（最小限の情報）
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
     
-    // タイトル
-    const title = document.createElement('h3');
+    const title = document.createElement('div');
+    title.className = 'overlay-title';
     title.textContent = item.title;
-    content.appendChild(title);
+    overlay.appendChild(title);
     
-    // サマリー
-    const summary = document.createElement('p');
-    summary.className = 'summary';
-    summary.textContent = item.summary;
-    content.appendChild(summary);
-    
-    // メタ情報
-    const meta = document.createElement('div');
-    meta.className = 'meta';
-    const type = document.createElement('span');
-    type.className = 'type';
+    const type = document.createElement('div');
+    type.className = 'overlay-type';
     type.textContent = item.type;
-    const date = document.createElement('span');
-    date.className = 'date';
-    date.textContent = item.date;
-    meta.appendChild(type);
-    meta.appendChild(date);
-    content.appendChild(meta);
+    overlay.appendChild(type);
     
-    // タグ
-    const tags = document.createElement('div');
-    tags.className = 'tags';
-    item.tags.forEach(tag => {
-        const tagEl = document.createElement('span');
-        tagEl.className = 'tag';
-        tagEl.textContent = tag;
-        tags.appendChild(tagEl);
-    });
-    content.appendChild(tags);
-    
-    // type別の追加表示
-    if (item.type === 'movie' && item.assets.video) {
-        const videoId = extractVideoId(item.assets.video);
-        if (videoId) {
-            const videoEmbed = document.createElement('div');
-            videoEmbed.className = 'video-embed';
-            const iframe = document.createElement('iframe');
-            iframe.src = `https://www.youtube.com/embed/${videoId}?rel=0`;
-            iframe.frameBorder = '0';
-            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-            iframe.allowFullscreen = true;
-            videoEmbed.appendChild(iframe);
-            content.appendChild(videoEmbed);
-        } else {
-            const link = document.createElement('a');
-            link.href = item.assets.video;
-            link.target = '_blank';
-            link.className = 'external-link';
-            link.textContent = '▶ YouTubeで視聴';
-            content.appendChild(link);
-        }
-    }
-    
-    if (item.type === 'music' && item.assets.audio) {
-        const audioPlayer = document.createElement('div');
-        audioPlayer.className = 'audio-player';
-        const audio = document.createElement('audio');
-        audio.controls = true;
-        audio.src = item.assets.audio;
-        audio.textContent = 'お使いのブラウザは音声再生に対応していません。';
-        audioPlayer.appendChild(audio);
-        content.appendChild(audioPlayer);
-    }
-    
-    if (item.type === 'write' && item.assets.content) {
-        const link = document.createElement('a');
-        // Markdownファイルの場合はarticle.htmlで表示
-        if (item.assets.content.endsWith('.md')) {
-            link.href = `article.html?file=${encodeURIComponent(item.assets.content)}`;
-        } else {
-            link.href = item.assets.content;
-        }
-        link.className = 'external-link';
-        link.textContent = '📄 記事を読む';
-        content.appendChild(link);
-    }
-    
-    if (item.type === 'software') {
-        const links = document.createElement('div');
-        links.className = 'software-links';
-        if (item.assets.repo) {
-            const repoLink = document.createElement('a');
-            repoLink.href = item.assets.repo;
-            repoLink.target = '_blank';
-            repoLink.className = 'external-link';
-            repoLink.textContent = '🔗 GitHub';
-            links.appendChild(repoLink);
-        }
-        if (item.assets.demo) {
-            const demoLink = document.createElement('a');
-            demoLink.href = item.assets.demo;
-            demoLink.target = '_blank';
-            demoLink.className = 'external-link';
-            demoLink.textContent = '🌐 Demo';
-            links.appendChild(demoLink);
-        }
-        if (links.children.length > 0) {
-            content.appendChild(links);
-        }
-    }
-    
-    if (item.type === 'hardware' && item.assets.description) {
-        const desc = document.createElement('p');
-        desc.className = 'hardware-description';
-        desc.textContent = item.assets.description;
-        content.appendChild(desc);
-    }
+    thumbnail.appendChild(overlay);
     
     card.appendChild(thumbnail);
-    card.appendChild(content);
     
     return card;
+}
+
+let currentItems = [];
+
+// テーブル行を生成
+function createTableRow(item) {
+    const row = document.createElement('tr');
+    
+    // サムネイル
+    const thumbnailCell = document.createElement('td');
+    const thumbnailImg = document.createElement('img');
+    thumbnailImg.src = item.thumbnail;
+    thumbnailImg.alt = item.title;
+    thumbnailImg.className = 'table-thumbnail';
+    thumbnailImg.onerror = function() {
+        this.src = `data:image/svg+xml,${encodeURIComponent(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="45">
+                <rect fill="#f0f0f0" width="80" height="45"/>
+                <text fill="#999" font-family="sans-serif" font-size="10" dy="10.5" font-weight="bold" 
+                      x="50%" y="50%" text-anchor="middle">${item.type}</text>
+            </svg>
+        `)}`;
+    };
+    thumbnailCell.appendChild(thumbnailImg);
+    
+    // タイトル
+    const titleCell = document.createElement('td');
+    titleCell.textContent = item.title;
+    titleCell.className = 'table-title';
+    
+    // タイプ
+    const typeCell = document.createElement('td');
+    typeCell.textContent = item.type;
+    typeCell.className = 'table-type';
+    
+    // 日付
+    const dateCell = document.createElement('td');
+    dateCell.textContent = item.date;
+    dateCell.className = 'table-date';
+    
+    // タグ
+    const tagsCell = document.createElement('td');
+    const tagsContainer = document.createElement('div');
+    tagsContainer.className = 'table-tags';
+    item.tags.forEach(tag => {
+        const tagSpan = document.createElement('span');
+        tagSpan.className = 'table-tag';
+        tagSpan.textContent = tag;
+        tagsContainer.appendChild(tagSpan);
+    });
+    tagsCell.appendChild(tagsContainer);
+    
+    row.appendChild(thumbnailCell);
+    row.appendChild(titleCell);
+    row.appendChild(typeCell);
+    row.appendChild(dateCell);
+    row.appendChild(tagsCell);
+    
+    return row;
 }
 
 // データを読み込んで表示
@@ -172,22 +129,17 @@ async function loadData() {
             throw new Error('データの読み込みに失敗しました');
         }
         
-        const items = await response.json();
+        currentItems = await response.json();
         
-        // 統計情報を更新
-        const stats = document.getElementById('stats');
-        const statItems = stats.querySelectorAll('.stat-value');
-        statItems[0].textContent = items.length;
-        statItems[1].textContent = new Set(items.map(item => item.type)).size;
+        // 現在のビューに応じて表示
+        const currentView = localStorage.getItem('currentView') || 'grid';
+        renderView(currentView);
         
-        // ギャラリーを更新
-        const gallery = document.getElementById('gallery');
-        gallery.innerHTML = '';
-        
-        items.forEach(item => {
-            const card = createMediaCard(item);
-            gallery.appendChild(card);
-        });
+        // データ読み込み後に設定を再適用
+        const imageSize = document.getElementById('imageSize').value;
+        const backgroundColor = document.getElementById('backgroundColor').value;
+        const fontSize = document.getElementById('fontSize').value;
+        applySettings(imageSize, backgroundColor, fontSize);
     } catch (error) {
         console.error('エラー:', error);
         const gallery = document.getElementById('gallery');
@@ -195,5 +147,125 @@ async function loadData() {
     }
 }
 
+// ビューをレンダリング
+function renderView(view) {
+    const gallery = document.getElementById('gallery');
+    const tableView = document.getElementById('tableView');
+    const tableBody = document.getElementById('tableBody');
+    
+    if (view === 'table') {
+        gallery.style.display = 'none';
+        tableView.style.display = 'block';
+        
+        // テーブルを更新
+        tableBody.innerHTML = '';
+        currentItems.forEach(item => {
+            const row = createTableRow(item);
+            tableBody.appendChild(row);
+        });
+    } else {
+        gallery.style.display = 'grid';
+        tableView.style.display = 'none';
+        
+        // ギャラリーを更新
+        gallery.innerHTML = '';
+        currentItems.forEach(item => {
+            const card = createMediaCard(item);
+            gallery.appendChild(card);
+        });
+    }
+}
+
+// 設定を読み込んで適用
+function loadSettings() {
+    const imageSize = localStorage.getItem('imageSize') || '200';
+    const backgroundColor = localStorage.getItem('backgroundColor') || '#f5f5f5';
+    const fontSize = localStorage.getItem('fontSize') || '1';
+    
+    // UI要素に設定値を反映
+    document.getElementById('imageSize').value = imageSize;
+    document.getElementById('imageSizeValue').textContent = imageSize;
+    document.getElementById('backgroundColor').value = backgroundColor;
+    document.getElementById('fontSize').value = fontSize;
+    document.getElementById('fontSizeValue').textContent = fontSize;
+    
+    // 設定を適用
+    applySettings(imageSize, backgroundColor, fontSize);
+}
+
+// 設定を適用
+function applySettings(imageSize, backgroundColor, fontSize) {
+    // 画像サイズを適用
+    document.documentElement.style.setProperty('--image-size', imageSize + 'px');
+    const gallery = document.querySelector('.gallery');
+    if (gallery) {
+        gallery.style.gridTemplateColumns = `repeat(auto-fill, minmax(${imageSize}px, 1fr))`;
+    }
+    
+    // 背景色を適用
+    document.body.style.backgroundColor = backgroundColor;
+    
+    // 文字サイズを適用（CSS変数を使用）
+    document.documentElement.style.setProperty('--font-size-multiplier', fontSize);
+}
+
+// 設定変更イベント
+function setupSettings() {
+    const imageSizeInput = document.getElementById('imageSize');
+    const backgroundColorInput = document.getElementById('backgroundColor');
+    const fontSizeInput = document.getElementById('fontSize');
+    
+    imageSizeInput.addEventListener('input', (e) => {
+        const value = e.target.value;
+        document.getElementById('imageSizeValue').textContent = value;
+        localStorage.setItem('imageSize', value);
+        applySettings(value, backgroundColorInput.value, fontSizeInput.value);
+    });
+    
+    backgroundColorInput.addEventListener('input', (e) => {
+        const value = e.target.value;
+        localStorage.setItem('backgroundColor', value);
+        applySettings(imageSizeInput.value, value, fontSizeInput.value);
+    });
+    
+    fontSizeInput.addEventListener('input', (e) => {
+        const value = e.target.value;
+        document.getElementById('fontSizeValue').textContent = value;
+        localStorage.setItem('fontSize', value);
+        applySettings(imageSizeInput.value, backgroundColorInput.value, value);
+    });
+}
+
+// ビュー切り替えの設定
+function setupViewToggle() {
+    const gridViewBtn = document.getElementById('gridViewBtn');
+    const tableViewBtn = document.getElementById('tableViewBtn');
+    
+    const currentView = localStorage.getItem('currentView') || 'grid';
+    if (currentView === 'table') {
+        gridViewBtn.classList.remove('active');
+        tableViewBtn.classList.add('active');
+    }
+    
+    gridViewBtn.addEventListener('click', () => {
+        gridViewBtn.classList.add('active');
+        tableViewBtn.classList.remove('active');
+        localStorage.setItem('currentView', 'grid');
+        renderView('grid');
+    });
+    
+    tableViewBtn.addEventListener('click', () => {
+        tableViewBtn.classList.add('active');
+        gridViewBtn.classList.remove('active');
+        localStorage.setItem('currentView', 'table');
+        renderView('table');
+    });
+}
+
 // ページ読み込み時にデータを読み込む
-document.addEventListener('DOMContentLoaded', loadData);
+document.addEventListener('DOMContentLoaded', () => {
+    loadSettings();
+    setupSettings();
+    setupViewToggle();
+    loadData();
+});
