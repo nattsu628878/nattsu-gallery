@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Items Editor - nattsu Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background: white;
+            padding: 0.75rem 2rem;
+            margin: -2rem -2rem 2rem -2rem;
+            border-bottom: 3px solid #628878;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        header h3 {
+            text-align: center;
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            color: #628878;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #628878;
+            background: #628878;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 4px;
+        }
+
+        .btn:hover {
+            background: #4d6b5f;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #628878;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f0f0;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="url"],
+        .form-group input[type="date"],
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #628878;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-family: 'Monaco', 'Courier New', monospace;
+            resize: vertical;
+            min-height: 200px;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #628878;
+        }
+
+        .tags-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.3rem 0.6rem;
+            background: rgba(98, 136, 120, 0.2);
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #628878;
+        }
+
+        .tag-remove {
+            margin-left: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .tag-input {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .assets-section {
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .asset-item {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            align-items: center;
+        }
+
+        .asset-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .asset-type {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .asset-path-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding-left: 0.5rem;
+            background: #f9f9f9;
+            min-width: 0;
+        }
+
+        .asset-path-prefix {
+            color: #666;
+            font-size: 0.85rem;
+            margin-right: 0.25rem;
+        }
+
+        .asset-path {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .asset-path:focus {
+            outline: none;
+        }
+
+        .asset-path-wrapper:focus-within {
+            border-color: #628878;
+            background: white;
+        }
+
+        .asset-remove {
+            padding: 0.25rem 0.5rem;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .asset-remove:hover {
+            background: #d32f2f;
+        }
+
+        .items-list {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .item-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-id {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #628878;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .item-title {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            border-color: #f44336;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h3>Items Editor</h3>
+            <div class="header-controls">
+                <div>
+                    <button class="btn btn-secondary" onclick="loadExisting()">既存を読み込む</button>
+                    <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="handleFileLoad(event)">
+                </div>
+                <div>
+                    <button class="btn btn-secondary" onclick="exportJSON()">JSONをエクスポート</button>
+                    <button class="btn" onclick="addItem()">アイテムを追加</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="form-container" id="formContainer" style="display: none;">
+            <h2 style="margin-bottom: 1.5rem; color: #628878;">新しいアイテムを追加</h2>
+            <form id="itemForm">
+                <div class="form-group">
+                    <label for="id">ID *</label>
+                    <input type="text" id="id" required placeholder="例: 2025-01-picture-sample">
+                </div>
+
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" placeholder="タイトル">
+                </div>
+
+                <div class="form-group">
+                    <label for="type">Type</label>
+                    <select id="type">
+                        <option value="">選択してください</option>
+                        <option value="picture">picture</option>
+                        <option value="movie">movie</option>
+                        <option value="music">music</option>
+                        <option value="write">write</option>
+                        <option value="dev">dev</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date">
+                </div>
+
+                <div class="form-group">
+                    <label for="url">URL</label>
+                    <input type="url" id="url" placeholder="https://example.com または /assets/file.md">
+                </div>
+
+                <div class="form-group">
+                    <label for="thumbnail">Thumbnail</label>
+                    <input type="text" id="thumbnail" placeholder="/thumbnails/image.jpg">
+                </div>
+
+                <div class="form-group">
+                    <label>Tags</label>
+                    <div class="tags-input">
+                        <input type="text" id="tagInput" class="tag-input" placeholder="タグを入力してEnter" onkeypress="handleTagKeyPress(event)">
+                    </div>
+                    <div id="tagsContainer" class="tags-input"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Assets</label>
+                    <div class="assets-section">
+                        <div id="assetsContainer"></div>
+                        <button type="button" class="btn btn-secondary btn-small" onclick="addAsset()" style="margin-top: 0.5rem;">アセットを追加</button>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" class="btn">保存</button>
+                    <button type="button" class="btn btn-secondary" onclick="cancelForm()">キャンセル</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="items-list">
+            <h2 style="margin-bottom: 1.5rem; color: #628878;">アイテム一覧</h2>
+            <div id="itemsContainer">
+                <div class="empty-state">アイテムがありません。既存のJSONを読み込むか、新しいアイテムを追加してください。</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let items = [];
+        let editingIndex = -1;
+        let currentTags = [];
+        let currentAssets = [];
+
+        // 既存のJSONを読み込む
+        function loadExisting() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleFileLoad(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    items = JSON.parse(e.target.result);
+                    renderItems();
+                } catch (error) {
+                    alert('JSONの読み込みに失敗しました: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // アイテムを追加
+        function addItem() {
+            editingIndex = -1;
+            currentTags = [];
+            currentAssets = [];
+            document.getElementById('itemForm').reset();
+            document.getElementById('tagsContainer').innerHTML = '';
+            document.getElementById('assetsContainer').innerHTML = '';
+            document.getElementById('formContainer').style.display = 'block';
+            document.getElementById('formContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // フォームをキャンセル
+        function cancelForm() {
+            document.getElementById('formContainer').style.display = 'none';
+            editingIndex = -1;
+            currentTags = [];
+            currentAssets = [];
+        }
+
+        // タグの追加
+        function handleTagKeyPress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const input = event.target;
+                const tag = input.value.trim();
+                if (tag && !currentTags.includes(tag)) {
+                    currentTags.push(tag);
+                    renderTags();
+                    input.value = '';
+                }
+            }
+        }
+
+        function removeTag(tag) {
+            currentTags = currentTags.filter(t => t !== tag);
+            renderTags();
+        }
+
+        function renderTags() {
+            const container = document.getElementById('tagsContainer');
+            container.innerHTML = currentTags.map(tag => `
+                <span class="tag">
+                    ${tag}
+                    <span class="tag-remove" onclick="removeTag('${tag}')">×</span>
+                </span>
+            `).join('');
+        }
+
+        // アセットの追加
+        function addAsset() {
+            const container = document.getElementById('assetsContainer');
+            const assetDiv = document.createElement('div');
+            assetDiv.className = 'asset-item';
+            assetDiv.innerHTML = `
+                <select class="asset-type" onchange="updateAssetType(this)">
+                    <option value="">タイプ</option>
+                    <option value="image">image</option>
+                    <option value="md">md</option>
+                    <option value="midi">midi</option>
+                    <option value="wav">wav</option>
+                </select>
+                <div class="asset-path-wrapper">
+                    <span class="asset-path-prefix">/assets/</span>
+                    <input type="text" class="asset-path" placeholder="file.md" onchange="updateAssetPath(this)">
+                </div>
+                <button type="button" class="asset-remove" onclick="removeAsset(this)">削除</button>
+            `;
+            container.appendChild(assetDiv);
+            currentAssets.push({ type: '', path: '' });
+        }
+
+        function updateAssetType(select) {
+            const index = Array.from(select.closest('.asset-item').parentElement.children).indexOf(select.closest('.asset-item'));
+            if (currentAssets[index]) {
+                currentAssets[index].type = select.value;
+            }
+        }
+
+        function updateAssetPath(input) {
+            const index = Array.from(input.closest('.asset-item').parentElement.children).indexOf(input.closest('.asset-item'));
+            if (currentAssets[index]) {
+                const path = input.value.trim();
+                // /assets/プレフィックスを自動的に追加
+                currentAssets[index].path = path ? `/assets/${path}` : '';
+            }
+        }
+
+        function removeAsset(button) {
+            const assetItem = button.parentElement;
+            const index = Array.from(assetItem.parentElement.children).indexOf(assetItem);
+            currentAssets.splice(index, 1);
+            assetItem.remove();
+        }
+
+        // フォーム送信
+        document.getElementById('itemForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const item = {
+                id: document.getElementById('id').value.trim()
+            };
+
+            const title = document.getElementById('title').value.trim();
+            if (title) item.title = title;
+
+            const type = document.getElementById('type').value;
+            if (type) item.type = type;
+
+            const date = document.getElementById('date').value;
+            if (date) item.date = date;
+
+            const url = document.getElementById('url').value.trim();
+            if (url) item.url = url;
+
+            const thumbnail = document.getElementById('thumbnail').value.trim();
+            if (thumbnail) item.thumbnail = thumbnail;
+
+            if (currentTags.length > 0) {
+                item.tags = currentTags;
+            }
+
+            // アセットの構築
+            const assets = {};
+            currentAssets.forEach(asset => {
+                if (asset.type && asset.path) {
+                    assets[asset.type] = asset.path;
+                }
+            });
+            if (Object.keys(assets).length > 0) {
+                item.assets = assets;
+            }
+
+            if (editingIndex >= 0) {
+                items[editingIndex] = item;
+            } else {
+                items.push(item);
+            }
+
+            renderItems();
+            cancelForm();
+        });
+
+        // アイテムの編集
+        function editItem(index) {
+            editingIndex = index;
+            const item = items[index];
+            
+            document.getElementById('id').value = item.id || '';
+            document.getElementById('title').value = item.title || '';
+            document.getElementById('type').value = item.type || '';
+            document.getElementById('date').value = item.date || '';
+            document.getElementById('url').value = item.url || '';
+            document.getElementById('thumbnail').value = item.thumbnail || '';
+
+            currentTags = item.tags || [];
+            renderTags();
+
+            currentAssets = [];
+            if (item.assets) {
+                Object.entries(item.assets).forEach(([type, path]) => {
+                    currentAssets.push({ type, path });
+                });
+            }
+            renderAssets();
+
+            document.getElementById('formContainer').style.display = 'block';
+            document.getElementById('formContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderAssets() {
+            const container = document.getElementById('assetsContainer');
+            container.innerHTML = '';
+            currentAssets.forEach((asset, index) => {
+                // パスから /assets/ プレフィックスを除去して表示
+                let displayPath = asset.path || '';
+                if (displayPath.startsWith('/assets/')) {
+                    displayPath = displayPath.substring(8); // '/assets/'.length = 8
+                }
+                
+                const assetDiv = document.createElement('div');
+                assetDiv.className = 'asset-item';
+                assetDiv.innerHTML = `
+                    <select class="asset-type" onchange="updateAssetType(this)">
+                        <option value="">タイプ</option>
+                        <option value="image" ${asset.type === 'image' ? 'selected' : ''}>image</option>
+                        <option value="md" ${asset.type === 'md' ? 'selected' : ''}>md</option>
+                        <option value="midi" ${asset.type === 'midi' ? 'selected' : ''}>midi</option>
+                        <option value="wav" ${asset.type === 'wav' ? 'selected' : ''}>wav</option>
+                    </select>
+                    <div class="asset-path-wrapper">
+                        <span class="asset-path-prefix">/assets/</span>
+                        <input type="text" class="asset-path" placeholder="file.md" value="${displayPath}" onchange="updateAssetPath(this)">
+                    </div>
+                    <button type="button" class="asset-remove" onclick="removeAsset(this)">削除</button>
+                `;
+                container.appendChild(assetDiv);
+            });
+        }
+
+        // アイテムの削除
+        function deleteItem(index) {
+            if (confirm('このアイテムを削除しますか？')) {
+                items.splice(index, 1);
+                renderItems();
+            }
+        }
+
+        // アイテム一覧の表示
+        function renderItems() {
+            const container = document.getElementById('itemsContainer');
+            if (items.length === 0) {
+                container.innerHTML = '<div class="empty-state">アイテムがありません。既存のJSONを読み込むか、新しいアイテムを追加してください。</div>';
+                return;
+            }
+
+            container.innerHTML = items.map((item, index) => `
+                <div class="item-card">
+                    <div class="item-info">
+                        <div class="item-id">${item.id}</div>
+                        <div class="item-title">${item.title || '(タイトルなし)'}</div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn btn-secondary btn-small" onclick="editItem(${index})">編集</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteItem(${index})">削除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // JSONをエクスポート
+        function exportJSON() {
+            const json = JSON.stringify(items, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'items.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

@@ -1,11 +1,11 @@
 [
   {
     "id": "2025-01-picture-sample",
-    "type": "picture",
     "title": "サンプル画像",
-    "summary": "テスト用のサンプル画像です",
-    "tags": ["test", "sample"],
+    "type": "picture",
     "date": "2025-01-15",
+    "tags": ["test", "sample", "photo"],
+    "url": "https://example.com/image.jpg",
     "thumbnail": "/thumbnails/picture-sample.jpg",
     "assets": {
       "image": "/thumbnails/picture-sample.jpg"
@@ -13,51 +13,143 @@
   },
   {
     "id": "2025-01-movie-sample",
-    "type": "movie",
     "title": "サンプル動画",
-    "summary": "テスト用のサンプル動画です",
-    "tags": ["test", "sample"],
-    "date": "2025-01-15",
-    "thumbnail": "/thumbnails/movie-sample.jpg",
-    "assets": {
-      "video": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-    }
+    "type": "movie",
+    "date": "2025-01-16",
+    "tags": ["test", "sample", "video"],
+    "url": ""
   },
   {
     "id": "2025-01-music-sample",
-    "type": "music",
     "title": "サンプル音楽",
-    "summary": "テスト用のサンプル音楽です",
-    "tags": ["test", "sample"],
-    "date": "2025-01-15",
-    "thumbnail": "/thumbnails/music-sample.jpg",
-    "assets": {
-      "audio": "https://soundcloud.com/s_b_y/tns_6?in=s_b_y/sets/tns"
-    }
+    "type": "music",
+    "date": "2025-01-17",
+    "tags": ["test", "sample", "audio"],
+    "url": ""
   },
   {
     "id": "2025-01-write-sample",
-    "type": "write",
     "title": "サンプル文章",
-    "summary": "テスト用のサンプル文章です",
-    "tags": ["test", "sample"],
-    "date": "2025-01-15",
+    "type": "write",
+    "date": "2025-01-18",
+    "tags": ["test", "sample", "article"],
+    "url": "/assets/write-sample.md",
     "thumbnail": "/thumbnails/write-sample.jpg",
     "assets": {
-      "content": "/content/write-sample.md"
+      "md": "/assets/write-sample.md"
     }
   },
   {
     "id": "2025-01-dev-sample",
-    "type": "dev",
     "title": "サンプル開発",
-    "summary": "テスト用のサンプル開発です",
-    "tags": ["test", "sample"],
-    "date": "2025-01-15",
-    "thumbnail": "/thumbnails/dev-sample.jpg",
+    "type": "dev",
+    "date": "2025-01-19",
+    "tags": ["test", "sample", "development"],
+    "url": "https://github.com/username/repo",
+    "thumbnail": "/thumbnails/dev-sample.jpg"
+  },
+  {
+    "id": "2025-01-youtube-video",
+    "title": "YouTube動画の例",
+    "type": "movie",
+    "date": "2025-01-20",
+    "tags": ["youtube", "video", "tutorial"],
+    "url": "https://www.youtube.com/watch?v=jNQXAC9IVRw"
+  },
+  {
+    "id": "2025-01-soundcloud-track",
+    "title": "SoundCloudトラックの例",
+    "type": "music",
+    "date": "2025-01-21",
+    "tags": ["soundcloud", "music", "electronic"],
+    "url": "https://soundcloud.com/user/track-name"
+  },
+  {
+    "id": "2025-01-article-blog",
+    "title": "ブログ記事の例",
+    "type": "write",
+    "date": "2025-01-22",
+    "tags": ["blog", "article", "writing"],
+    "url": "/assets/blog-post.md",
+    "thumbnail": "/thumbnails/blog-post.jpg",
     "assets": {
-      "repo": "https://github.com/username/repo",
-      "demo": "https://example.com/demo"
+      "md": "/assets/blog-post.md"
+    }
+  },
+  {
+    "id": "2025-01-project-github",
+    "title": "GitHubプロジェクト",
+    "type": "dev",
+    "date": "2025-01-23",
+    "tags": ["github", "project", "code"],
+    "url": "https://github.com/username/awesome-project",
+    "thumbnail": "/thumbnails/github-project.jpg"
+  },
+  {
+    "id": "2025-01-photo-gallery",
+    "title": "写真ギャラリー",
+    "type": "picture",
+    "date": "2025-01-24",
+    "tags": ["photo", "gallery", "art"],
+    "url": "https://example.com/gallery",
+    "thumbnail": "/thumbnails/photo-gallery.jpg",
+    "assets": {
+      "image": "/thumbnails/photo-gallery.jpg"
+    }
+  },
+  {
+    "id": "2025-01-sample-01",
+    "title": "春の訪れ",
+    "type": "write",
+    "date": "2025-01-25",
+    "tags": ["sample", "spring", "hanami"],
+    "url": "/assets/sample-01.md",
+    "assets": {
+      "md": "/assets/sample-01.md"
+    }
+  },
+  {
+    "id": "2025-01-sample-02",
+    "title": "プログラミングメモ",
+    "type": "write",
+    "date": "2025-01-26",
+    "tags": ["sample", "programming", "memo"],
+    "url": "/assets/sample-02.md",
+    "assets": {
+      "md": "/assets/sample-02.md"
+    }
+  },
+  {
+    "id": "2025-01-sample-03",
+    "title": "読書ノート",
+    "type": "write",
+    "date": "2025-01-27",
+    "tags": ["sample", "book", "review"],
+    "url": "/assets/sample-03.md",
+    "assets": {
+      "md": "/assets/sample-03.md"
+    }
+  },
+  {
+    "id": "2025-01-sample-04",
+    "title": "旅行計画",
+    "type": "write",
+    "date": "2025-01-28",
+    "tags": ["sample", "travel", "plan"],
+    "url": "/assets/sample-04.md",
+    "assets": {
+      "md": "/assets/sample-04.md"
+    }
+  },
+  {
+    "id": "2025-01-sample-05",
+    "title": "日記",
+    "type": "write",
+    "date": "2025-01-29",
+    "tags": ["sample", "diary", "daily"],
+    "url": "/assets/sample-05.md",
+    "assets": {
+      "md": "/assets/sample-05.md"
     }
   }
 ]

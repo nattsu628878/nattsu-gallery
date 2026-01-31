@@ -1,0 +1,87 @@
+/* Table View スタイル */
+
+.table-view {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.table-view table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-view thead {
+    background: #f8f8f8;
+}
+
+.table-view th {
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.table-view td {
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.table-view tbody tr:hover {
+    background: var(--accent-bg, rgba(98, 136, 120, 0.08));
+}
+
+.table-thumbnail {
+    width: 80px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.table-title {
+    font-weight: 500;
+}
+
+.table-type {
+    text-transform: uppercase;
+    color: var(--accent, #628878);
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.table-date {
+    color: #999;
+    font-size: 0.85rem;
+}
+
+.table-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.table-tag {
+    padding: 0.25rem 0.5rem;
+    background: #f0f0f0;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: #666;
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+    .table-view {
+        overflow-x: auto;
+    }
+    
+    .table-view table {
+        min-width: 600px;
+    }
+}

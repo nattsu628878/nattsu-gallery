@@ -1,61 +1,77 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>nattsu Gallery - マルチメディアデータベース</title>
+    <title>nattsu Gallery</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
       <header>
-        <h1>Gallery</h1>
+        <h1 class="header-title">Gallery</h1>
         <div class="header-controls">
-          <div class="view-toggle">
-            <button id="gridViewBtn" class="view-btn active">Grid</button>
-            <button id="tableViewBtn" class="view-btn">Table</button>
-          </div>
-          <div class="settings">
+          <div id="headerGridControls" class="header-view-controls" style="display: none;">
             <div class="setting-item">
               <label for="imageSize">Size</label>
               <input type="range" id="imageSize" min="150" max="400" value="200" step="10">
               <span id="imageSizeValue">200</span>
             </div>
             <div class="setting-item">
-              <label for="backgroundColor">Background</label>
-              <input type="color" id="backgroundColor" value="#f5f5f5">
+              <label for="sortOrder">Sort</label>
+              <select id="sortOrder">
+                <option value="asc">Added</option>
+                <option value="desc">Added (rev)</option>
+              </select>
             </div>
             <div class="setting-item">
-              <label for="fontSize">Font</label>
-              <input type="range" id="fontSize" min="0.5" max="1.5" value="1" step="0.1">
-              <span id="fontSizeValue">1.0</span>
+              <label for="filterType">Type</label>
+              <select id="filterType">
+                <option value="">All</option>
+              </select>
             </div>
+          </div>
+          <div id="headerTableControls" class="header-view-controls" style="display: none;">
+            <div class="setting-item">
+              <label for="sortOrderTable">Sort</label>
+              <select id="sortOrderTable">
+                <option value="asc">Added</option>
+                <option value="desc">Added (rev)</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <label for="filterTypeTable">Type</label>
+              <select id="filterTypeTable">
+                <option value="">All</option>
+              </select>
+            </div>
+          </div>
+          <div class="view-toggle">
+            <button id="gridViewBtn" class="view-btn active">Grid</button>
+            <button id="tableViewBtn" class="view-btn">Table</button>
+            <button id="simpleViewBtn" class="view-btn">Simple</button>
           </div>
         </div>
       </header>
-        
         <main>
             <div class="gallery" id="gallery">
-                <p>読み込み中...</p>
+                <p class="loading-msg">Loading...</p>
             </div>
-            <div class="table-view" id="tableView" style="display: none;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Thumbnail</th>
-                            <th>Title</th>
-                            <th>Type</th>
-                            <th>Date</th>
-                            <th>Tags</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                    </tbody>
-                </table>
-            </div>
+            <div class="table-view" id="tableView" style="display: none;"></div>
+            <div class="simple-view" id="simpleView" style="display: none;"></div>
         </main>
     </div>
     
-    <script src="app.js"></script>
+    <div id="detailPanel" class="detail-panel">
+        <div class="detail-content">
+            <h2 class="detail-title"></h2>
+            <div class="detail-type"></div>
+            <div class="detail-summary"></div>
+            <div class="detail-date"></div>
+            <div class="detail-tags"></div>
+        </div>
+    </div>
+    
+    <script type="module" src="app.js"></script>
 </body>
 </html>

@@ -1,0 +1,30 @@
+/* Simple View スタイル */
+
+.simple-view {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.simple-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.simple-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.simple-item:last-child {
+    border-bottom: none;
+}
+
+.simple-item:hover {
+    background: #f8f8f8;
+}
