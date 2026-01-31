@@ -147,9 +147,16 @@ export async function renderGrid(container, options = {}, items = null) {
     }
 }
 
+// view-transition-name用にIDをサニタイズ（CSS識別子として有効な形式に）
+function getViewTransitionName(id) {
+    return 'item-' + String(id).replace(/[^a-zA-Z0-9-_]/g, '-');
+}
+
 function createMediaCard(item) {
     const card = document.createElement('div');
     card.className = 'media-card';
+    card.setAttribute('data-id', item.id);
+    card.style.viewTransitionName = getViewTransitionName(item.id);
     if (item.type) {
         card.setAttribute('data-type', item.type);
     }

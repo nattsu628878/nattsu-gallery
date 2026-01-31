@@ -204,6 +204,20 @@ main {
     }
 }
 
+/* View Transitions API: ソート/フィルタ変更時のアイテム移動アニメーション */
+::view-transition-group(root) {
+    animation-duration: 0.4s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 各アイテムの移動を滑らかに（同じview-transition-nameの要素は位置を補間してアニメーション） */
+::view-transition-old(*),
+::view-transition-new(*) {
+    animation-duration: 0.4s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    mix-blend-mode: normal;
+}
+
 .detail-panel {
     position: fixed;
     bottom: -50vh;

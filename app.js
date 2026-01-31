@@ -227,12 +227,23 @@ function setupSettings() {
     }
 }
 
+// View Transitions APIでソート/フィルタ変更時のアイテム移動アニメーションを実行
+function withViewTransition(updateFn) {
+    if (typeof document.startViewTransition === 'function') {
+        document.startViewTransition(updateFn);
+    } else {
+        updateFn();
+    }
+}
+
 function reRenderGrid() {
     const gallery = document.getElementById('gallery');
     if (!gallery || currentItems.length === 0) return;
     const sortOrder = document.getElementById('sortOrder')?.value || 'asc';
     const filterType = document.getElementById('filterType')?.value || '';
-    renderGrid(gallery, { sortOrder, filterType }, currentItems);
+    withViewTransition(async () => {
+        await renderGrid(gallery, { sortOrder, filterType }, currentItems);
+    });
 }
 
 function reRenderTable() {
@@ -240,7 +251,9 @@ function reRenderTable() {
     if (!tableView || currentItems.length === 0) return;
     const sortOrder = document.getElementById('sortOrderTable')?.value || 'asc';
     const filterType = document.getElementById('filterTypeTable')?.value || '';
-    renderTable(tableView, { sortOrder, filterType }, currentItems);
+    withViewTransition(async () => {
+        await renderTable(tableView, { sortOrder, filterType }, currentItems);
+    });
 }
 
 function setupViewToggle() {

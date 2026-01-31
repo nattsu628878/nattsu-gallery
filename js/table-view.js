@@ -164,8 +164,15 @@ export async function renderTable(container, options = {}, items = null) {
     }
 }
 
+// view-transition-name用にIDをサニタイズ（CSS識別子として有効な形式に）
+function getViewTransitionName(id) {
+    return 'item-' + String(id).replace(/[^a-zA-Z0-9-_]/g, '-');
+}
+
 function createTableRow(item) {
     const row = document.createElement('tr');
+    row.setAttribute('data-id', item.id);
+    row.style.viewTransitionName = getViewTransitionName(item.id);
     
     // サムネイル
     const thumbnailCell = document.createElement('td');
