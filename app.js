@@ -17,21 +17,18 @@ function updateHeaderForView(view) {
     if (headerTable) headerTable.style.display = view === 'table' ? 'flex' : 'none';
 }
 
-// アイテム一覧から Type のユニーク値を取得し、絞り込み用 select を更新
-function updateTypeFilterOptions(items) {
-    const types = [...new Set((items || []).map(item => item.type).filter(Boolean))].sort();
-    const optionsHtml = '<option value="">All</option>' + types.map(t => `<option value="${t}">${t}</option>`).join('');
-    const filterType = document.getElementById('filterType');
-    const filterTypeTable = document.getElementById('filterTypeTable');
-    if (filterType) {
-        const current = filterType.value;
-        filterType.innerHTML = optionsHtml;
-        if (types.includes(current)) filterType.value = current;
-    }
-    if (filterTypeTable) {
-        const current = filterTypeTable.value;
-        filterTypeTable.innerHTML = optionsHtml;
-        if (types.includes(current)) filterTypeTable.value = current;
+// アイテム一覧からタグのユニーク値を取得し、Table の絞り込み用 select を更新
+function updateTagsFilterOptions(items) {
+    const tags = [...new Set((items || []).flatMap(item => item.tags || []).filter(Boolean))].sort();
+    const optionsHtml = '<option value="">All</option>' + tags.map(t => {
+        const esc = String(t).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return `<option value="${esc}">${esc}</option>`;
+    }).join('');
+    const filterTagTable = document.getElementById('filterTagTable');
+    if (filterTagTable) {
+        const current = filterTagTable.value;
+        filterTagTable.innerHTML = optionsHtml;
+        if (tags.includes(current)) filterTagTable.value = current;
     }
 }
 
@@ -114,10 +111,10 @@ async function renderView(view) {
             if (tableView) {
                 const items = await fetchItems();
                 currentItems = items;
-                updateTypeFilterOptions(items);
+                updateTagsFilterOptions(items);
                 const sortOrder = document.getElementById('sortOrderTable')?.value || 'asc';
-                const filterType = document.getElementById('filterTypeTable')?.value || '';
-                await renderTable(tableView, { sortOrder, filterType }, items);
+                const filterTag = document.getElementById('filterTagTable')?.value || '';
+                await renderTable(tableView, { sortOrder, filterTag }, items);
             }
         } else if (view === 'simple') {
             if (simpleView) {
@@ -127,10 +124,8 @@ async function renderView(view) {
             if (gallery) {
                 const items = await fetchItems();
                 currentItems = items;
-                updateTypeFilterOptions(items);
-                const sortOrder = document.getElementById('sortOrder')?.value || 'asc';
-                const filterType = document.getElementById('filterType')?.value || '';
-                await renderGrid(gallery, { sortOrder, filterType }, items);
+                await renderGrid(gallery, {}, items);
+                applyGridCardShape();
             }
         }
         currentVisibleContainer = targetContainer;
@@ -173,15 +168,22 @@ function loadSettings() {
         if (imageSizeValue) imageSizeValue.textContent = imageSize;
     }
     applySizeSetting();
+    const gridCardShape = localStorage.getItem('gridCardShape') || 'fit';
+    const gridCardShapeEl = document.getElementById('gridCardShape');
+    if (gridCardShapeEl) gridCardShapeEl.value = gridCardShape;
+}
+
+function applyGridCardShape() {
+    const gallery = document.getElementById('gallery');
+    const shape = localStorage.getItem('gridCardShape') || 'fit';
+    if (gallery) {
+        gallery.classList.toggle('grid-card-square', shape === 'square');
+    }
 }
 
 function applySizeSetting() {
     const imageSize = document.getElementById('imageSize')?.value || '200';
     document.documentElement.style.setProperty('--image-size', imageSize + 'px');
-    const gallery = document.querySelector('.gallery');
-    if (gallery) {
-        gallery.style.gridTemplateColumns = `repeat(auto-fill, minmax(${imageSize}px, 1fr))`;
-    }
 }
 
 function setupSettings() {
@@ -195,34 +197,25 @@ function setupSettings() {
             applySizeSetting();
         });
     }
-
-    const sortOrder = document.getElementById('sortOrder');
-    const filterType = document.getElementById('filterType');
-    if (sortOrder) {
-        sortOrder.addEventListener('change', () => {
-            const view = localStorage.getItem('currentView') || 'grid';
-            if (view === 'grid') reRenderGrid();
-        });
-    }
-    if (filterType) {
-        filterType.addEventListener('change', () => {
-            const view = localStorage.getItem('currentView') || 'grid';
-            if (view === 'grid') reRenderGrid();
+    const gridCardShapeEl = document.getElementById('gridCardShape');
+    if (gridCardShapeEl) {
+        gridCardShapeEl.addEventListener('change', () => {
+            const value = gridCardShapeEl.value || 'fit';
+            localStorage.setItem('gridCardShape', value);
+            applyGridCardShape();
         });
     }
 
     const sortOrderTable = document.getElementById('sortOrderTable');
-    const filterTypeTable = document.getElementById('filterTypeTable');
+    const filterTagTable = document.getElementById('filterTagTable');
     if (sortOrderTable) {
         sortOrderTable.addEventListener('change', () => {
-            const view = localStorage.getItem('currentView') || 'grid';
-            if (view === 'table') reRenderTable();
+            if (localStorage.getItem('currentView') === 'table') reRenderTable();
         });
     }
-    if (filterTypeTable) {
-        filterTypeTable.addEventListener('change', () => {
-            const view = localStorage.getItem('currentView') || 'grid';
-            if (view === 'table') reRenderTable();
+    if (filterTagTable) {
+        filterTagTable.addEventListener('change', () => {
+            if (localStorage.getItem('currentView') === 'table') reRenderTable();
         });
     }
 }
@@ -239,10 +232,8 @@ function withViewTransition(updateFn) {
 function reRenderGrid() {
     const gallery = document.getElementById('gallery');
     if (!gallery || currentItems.length === 0) return;
-    const sortOrder = document.getElementById('sortOrder')?.value || 'asc';
-    const filterType = document.getElementById('filterType')?.value || '';
     withViewTransition(async () => {
-        await renderGrid(gallery, { sortOrder, filterType }, currentItems);
+        await renderGrid(gallery, {}, currentItems);
     });
 }
 
@@ -250,9 +241,9 @@ function reRenderTable() {
     const tableView = document.getElementById('tableView');
     if (!tableView || currentItems.length === 0) return;
     const sortOrder = document.getElementById('sortOrderTable')?.value || 'asc';
-    const filterType = document.getElementById('filterTypeTable')?.value || '';
+    const filterTag = document.getElementById('filterTagTable')?.value || '';
     withViewTransition(async () => {
-        await renderTable(tableView, { sortOrder, filterType }, currentItems);
+        await renderTable(tableView, { sortOrder, filterTag }, currentItems);
     });
 }
 

@@ -123,6 +123,27 @@
             color: #666;
             font-style: italic;
         }
+
+        /* 画像・動画の大きさを自動調節（はみ出さない） */
+        .content img {
+            max-width: 100%;
+            height: auto;
+            max-height: 70vh;
+            object-fit: contain;
+            display: block;
+        }
+        .content video {
+            max-width: 100%;
+            height: auto;
+            max-height: 70vh;
+            display: block;
+        }
+        .content iframe {
+            max-width: 100%;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            max-height: 70vh;
+        }
         
         .loading {
             text-align: center;
@@ -170,18 +191,35 @@
                     return response.text();
                 })
                 .then(markdown => {
+                    // [[id]] / [[id|表示テキスト]] を Markdown リンクに変換（Obsidian 風ウィキリンク）
+                    const wikiLinkRegex = /\[\[([^\]|]+)(?:\|([^\]]*))?\]\]/g;
+                    markdown = markdown.replace(wikiLinkRegex, (_, id, text) => {
+                        const display = (text && text.trim()) || id.trim();
+                        const filePath = '/assets/' + id.trim() + '.md';
+                        const url = 'article.html?file=' + encodeURIComponent(filePath);
+                        const escaped = display.replace(/\\/g, '\\\\').replace(/\]/g, '\\]');
+                        return `[${escaped}](${url})`;
+                    });
+
                     // MarkdownをHTMLに変換
                     const html = marked.parse(markdown);
                     document.getElementById('content').innerHTML = html;
                     
-                    // タイトルを設定（最初のh1から取得、なければファイル名から）
-                    const titleMatch = markdown.match(/^#\s+(.+)$/m);
-                    if (titleMatch) {
-                        document.getElementById('title').textContent = titleMatch[1];
-                        document.title = `${titleMatch[1]} - nattsu Gallery`;
+                    // タイトルを設定（URLのtitleパラメータ優先 → 最初のh1 → ファイル名）
+                    const titleFromUrl = urlParams.get('title');
+                    if (titleFromUrl) {
+                        document.getElementById('title').textContent = titleFromUrl;
+                        document.title = `${titleFromUrl} - nattsu Gallery`;
                     } else {
-                        const fileName = file.split('/').pop().replace('.md', '');
-                        document.getElementById('title').textContent = fileName;
+                        const titleMatch = markdown.match(/^#\s+(.+)$/m);
+                        if (titleMatch) {
+                            document.getElementById('title').textContent = titleMatch[1];
+                            document.title = `${titleMatch[1]} - nattsu Gallery`;
+                        } else {
+                            const fileName = file.split('/').pop().replace('.md', '');
+                            document.getElementById('title').textContent = fileName;
+                            document.title = `${fileName} - nattsu Gallery`;
+                        }
                     }
                     
                     // メタ情報を設定

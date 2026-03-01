@@ -49,13 +49,6 @@
     font-weight: 500;
 }
 
-.table-type {
-    text-transform: uppercase;
-    color: var(--accent, #628878);
-    font-weight: 600;
-    font-size: 0.8rem;
-}
-
 .table-date {
     color: #999;
     font-size: 0.85rem;

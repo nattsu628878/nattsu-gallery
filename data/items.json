@@ -1,155 +1,100 @@
 [
   {
-    "id": "2025-01-picture-sample",
-    "title": "サンプル画像",
-    "type": "picture",
-    "date": "2025-01-15",
-    "tags": ["test", "sample", "photo"],
-    "url": "https://example.com/image.jpg",
-    "thumbnail": "/thumbnails/picture-sample.jpg",
-    "assets": {
-      "image": "/thumbnails/picture-sample.jpg"
-    }
-  },
-  {
-    "id": "2025-01-movie-sample",
-    "title": "サンプル動画",
+    "id": "2026-02-17",
+    "title": "Logic Sketches #1",
     "type": "movie",
-    "date": "2025-01-16",
-    "tags": ["test", "sample", "video"],
-    "url": ""
+    "date": "2026-02-17",
+    "tags": [
+      "logic",
+      "music",
+      "dtm"
+    ],
+    "url": "https://www.youtube.com/watch?v=ZsMoLr6fj8c"
   },
   {
-    "id": "2025-01-music-sample",
-    "title": "サンプル音楽",
-    "type": "music",
-    "date": "2025-01-17",
-    "tags": ["test", "sample", "audio"],
-    "url": ""
-  },
-  {
-    "id": "2025-01-write-sample",
-    "title": "サンプル文章",
-    "type": "write",
-    "date": "2025-01-18",
-    "tags": ["test", "sample", "article"],
-    "url": "/assets/write-sample.md",
-    "thumbnail": "/thumbnails/write-sample.jpg",
-    "assets": {
-      "md": "/assets/write-sample.md"
-    }
-  },
-  {
-    "id": "2025-01-dev-sample",
-    "title": "サンプル開発",
-    "type": "dev",
-    "date": "2025-01-19",
-    "tags": ["test", "sample", "development"],
-    "url": "https://github.com/username/repo",
-    "thumbnail": "/thumbnails/dev-sample.jpg"
-  },
-  {
-    "id": "2025-01-youtube-video",
-    "title": "YouTube動画の例",
+    "id": "2026-02-17-2",
+    "title": "Logic Sketches #2",
     "type": "movie",
-    "date": "2025-01-20",
-    "tags": ["youtube", "video", "tutorial"],
-    "url": "https://www.youtube.com/watch?v=jNQXAC9IVRw"
+    "date": "2026-02-17",
+    "tags": [
+      "logic",
+      "music",
+      "dtm"
+    ],
+    "url": "https://www.youtube.com/watch?v=ue_ao49xqOs"
   },
   {
-    "id": "2025-01-soundcloud-track",
-    "title": "SoundCloudトラックの例",
-    "type": "music",
-    "date": "2025-01-21",
-    "tags": ["soundcloud", "music", "electronic"],
-    "url": "https://soundcloud.com/user/track-name"
+    "id": "2026-02-17-3",
+    "title": "Logic Sketches #3",
+    "type": "movie",
+    "date": "2026-02-17",
+    "tags": [
+      "logic",
+      "music",
+      "dtm"
+    ],
+    "url": "https://www.youtube.com/watch?v=rgHwCdeamsU"
   },
   {
-    "id": "2025-01-article-blog",
-    "title": "ブログ記事の例",
-    "type": "write",
-    "date": "2025-01-22",
-    "tags": ["blog", "article", "writing"],
-    "url": "/assets/blog-post.md",
-    "thumbnail": "/thumbnails/blog-post.jpg",
-    "assets": {
-      "md": "/assets/blog-post.md"
-    }
+    "id": "2026-02-17-4",
+    "title": "Piano Imp. #1",
+    "type": "movie",
+    "date": "2026-02-17",
+    "tags": [
+      "logic",
+      "music",
+      "dtm"
+    ],
+    "url": "https://www.youtube.com/watch?v=lfUTPPAvT2g"
   },
   {
-    "id": "2025-01-project-github",
-    "title": "GitHubプロジェクト",
-    "type": "dev",
-    "date": "2025-01-23",
-    "tags": ["github", "project", "code"],
-    "url": "https://github.com/username/awesome-project",
-    "thumbnail": "/thumbnails/github-project.jpg"
+    "id": "2026-02-17-5",
+    "title": "Logic Sketches #4",
+    "type": "movie",
+    "date": "2026-02-17",
+    "tags": [
+      "logic",
+      "music",
+      "dtm"
+    ],
+    "url": "https://www.youtube.com/watch?v=oNvoSopEkHU"
   },
   {
-    "id": "2025-01-photo-gallery",
-    "title": "写真ギャラリー",
-    "type": "picture",
-    "date": "2025-01-24",
-    "tags": ["photo", "gallery", "art"],
-    "url": "https://example.com/gallery",
-    "thumbnail": "/thumbnails/photo-gallery.jpg",
-    "assets": {
-      "image": "/thumbnails/photo-gallery.jpg"
-    }
+    "id": "2026-02-17-6",
+    "title": "明日へ降る雨[Analog-synth ver.]",
+    "type": "movie",
+    "date": "2026-02-17",
+    "tags": [
+      "logic",
+      "music",
+      "dtm",
+      "arrange"
+    ],
+    "url": "https://www.youtube.com/watch?v=5uSUQYWn9Vk"
   },
   {
-    "id": "2025-01-sample-01",
-    "title": "春の訪れ",
-    "type": "write",
-    "date": "2025-01-25",
-    "tags": ["sample", "spring", "hanami"],
-    "url": "/assets/sample-01.md",
-    "assets": {
-      "md": "/assets/sample-01.md"
-    }
+    "id": "2026-02-17-9",
+    "title": "Piano Imp. #2",
+    "type": "movie",
+    "date": "2026-02-17",
+    "tags": [
+      "logic",
+      "music",
+      "dtm"
+    ],
+    "url": "https://www.youtube.com/watch?v=6KmzJqfRNo0"
   },
   {
-    "id": "2025-01-sample-02",
-    "title": "プログラミングメモ",
-    "type": "write",
-    "date": "2025-01-26",
-    "tags": ["sample", "programming", "memo"],
-    "url": "/assets/sample-02.md",
-    "assets": {
-      "md": "/assets/sample-02.md"
-    }
-  },
-  {
-    "id": "2025-01-sample-03",
-    "title": "読書ノート",
-    "type": "write",
-    "date": "2025-01-27",
-    "tags": ["sample", "book", "review"],
-    "url": "/assets/sample-03.md",
-    "assets": {
-      "md": "/assets/sample-03.md"
-    }
-  },
-  {
-    "id": "2025-01-sample-04",
-    "title": "旅行計画",
-    "type": "write",
-    "date": "2025-01-28",
-    "tags": ["sample", "travel", "plan"],
-    "url": "/assets/sample-04.md",
-    "assets": {
-      "md": "/assets/sample-04.md"
-    }
-  },
-  {
-    "id": "2025-01-sample-05",
-    "title": "日記",
-    "type": "write",
-    "date": "2025-01-29",
-    "tags": ["sample", "diary", "daily"],
-    "url": "/assets/sample-05.md",
-    "assets": {
-      "md": "/assets/sample-05.md"
-    }
+    "id": "2026-02-17-10",
+    "title": "移ろふ",
+    "type": "movie",
+    "date": "2026-02-17",
+    "tags": [
+      "logic",
+      "music",
+      "dtm",
+      "piano"
+    ],
+    "url": "https://www.youtube.com/shorts/B-UweMjDrk0"
   }
 ]

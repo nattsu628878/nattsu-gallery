@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,21 +13,10 @@
         <div class="header-controls">
           <div id="headerGridControls" class="header-view-controls" style="display: none;">
             <div class="setting-item">
-              <label for="imageSize">Size</label>
-              <input type="range" id="imageSize" min="150" max="400" value="200" step="10">
-              <span id="imageSizeValue">200</span>
-            </div>
-            <div class="setting-item">
-              <label for="sortOrder">Sort</label>
-              <select id="sortOrder">
-                <option value="asc">Added</option>
-                <option value="desc">Added (rev)</option>
-              </select>
-            </div>
-            <div class="setting-item">
-              <label for="filterType">Type</label>
-              <select id="filterType">
-                <option value="">All</option>
+              <label for="gridCardShape">Shape</label>
+              <select id="gridCardShape">
+                <option value="fit">Fit</option>
+                <option value="square">Square</option>
               </select>
             </div>
           </div>
@@ -35,13 +24,13 @@
             <div class="setting-item">
               <label for="sortOrderTable">Sort</label>
               <select id="sortOrderTable">
-                <option value="asc">Added</option>
-                <option value="desc">Added (rev)</option>
+                <option value="asc">Date</option>
+                <option value="desc">Date (rev)</option>
               </select>
             </div>
             <div class="setting-item">
-              <label for="filterTypeTable">Type</label>
-              <select id="filterTypeTable">
+              <label for="filterTagTable">Tag</label>
+              <select id="filterTagTable">
                 <option value="">All</option>
               </select>
             </div>
@@ -61,17 +50,7 @@
             <div class="simple-view" id="simpleView" style="display: none;"></div>
         </main>
     </div>
-    
-    <div id="detailPanel" class="detail-panel">
-        <div class="detail-content">
-            <h2 class="detail-title"></h2>
-            <div class="detail-type"></div>
-            <div class="detail-summary"></div>
-            <div class="detail-date"></div>
-            <div class="detail-tags"></div>
-        </div>
-    </div>
-    
+
     <script type="module" src="app.js"></script>
 </body>
 </html>

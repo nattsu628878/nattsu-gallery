@@ -8,7 +8,8 @@ export function extractVideoId(url) {
     
     const patterns = [
         /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
-        /youtube\.com\/watch\?.*v=([^&\n?#]+)/
+        /youtube\.com\/watch\?.*v=([^&\n?#]+)/,
+        /youtube\.com\/shorts\/([^&\n?#\/]+)/  // YouTube Shorts
     ];
     
     for (const pattern of patterns) {
@@ -21,24 +22,59 @@ export function extractVideoId(url) {
     return null;
 }
 
-// サムネイルURLを取得する共通関数（後方互換性のため残す）
-export function getThumbnailUrl(item) {
-    // assets.imageを優先
-    if (item.assets && item.assets.image) {
-        return item.assets.image;
+// URLからサムネイルURLを取得（YouTube / SoundCloud は同期で返せるもののみ）
+export function getThumbnailFromUrl(url) {
+    if (!url) return null;
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        const videoId = extractVideoId(url);
+        if (videoId) {
+            return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        }
     }
-    
-    // 後方互換性: item.thumbnailがあれば使用
-    return item.thumbnail || '';
+    if (url.includes('soundcloud.com')) {
+        return null; // 非同期で oEmbed 取得するため
+    }
+    return url;
+}
+
+// アイテムからサムネイルURLを取得（優先順: assets.image > thumbnail > url）
+export function getThumbnailUrlForItem(item) {
+    if (item.assets && item.assets.image) return item.assets.image;
+    if (item.thumbnail) return item.thumbnail;
+    if (item.url) {
+        const fromUrl = getThumbnailFromUrl(item.url);
+        if (fromUrl) return fromUrl;
+    }
+    return '';
+}
+
+// 後方互換: getThumbnailUrl は getThumbnailUrlForItem の短い別名
+export function getThumbnailUrl(item) {
+    return getThumbnailUrlForItem(item);
+}
+
+// view-transition-name 用に ID をサニタイズ（CSS識別子として有効な形式に）
+export function getViewTransitionName(id) {
+    return 'item-' + String(id).replace(/[^a-zA-Z0-9-_]/g, '-');
 }
 
 // アイテムのクリックアクションを実行
 // 複数のアセットタイプがある場合の優先順位:
-// 1. wav (音声ファイル)
-// 2. midi (MIDIファイル)
-// 3. md (Markdown説明文)
-// 4. url (外部リンク)
+// 1. picture: 画像を新しいタブで表示
+// 2. wav (音声ファイル)
+// 3. midi (MIDIファイル)
+// 4. md (Markdown説明文)
+// 5. url (外部リンク)
 export function executeAction(item) {
+    // 画像1枚: 画像URLを新しいタブで開く
+    if (item.type === 'picture') {
+        const imgUrl = item.assets?.image || item.thumbnail;
+        if (imgUrl) {
+            window.open(imgUrl, '_blank');
+            return;
+        }
+    }
+
     if (item.assets) {
         // 優先順位: wav > midi > md
         if (item.assets.wav) {
@@ -50,11 +86,15 @@ export function executeAction(item) {
             return;
         }
         if (item.assets.md) {
-            window.open(`article.html?file=${encodeURIComponent(item.assets.md)}`, '_blank');
+            let url = `article.html?file=${encodeURIComponent(item.assets.md)}`;
+            if (item.title) {
+                url += `&title=${encodeURIComponent(item.title)}`;
+            }
+            window.open(url, '_blank');
             return;
         }
     }
-    
+
     // それ以外はurlを開く
     if (item.url) {
         window.open(item.url, '_blank');

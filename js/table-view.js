@@ -1,96 +1,17 @@
 /**
  * Table View
- * 
- * 受け付けるJSONスキーマ:
- * {
- *   "id": string (必須),
- *   "url"?: string,                    // サムネイル取得用のURL
- *   "thumbnail"?: string,              // 直接サムネイルURL（urlがない場合のフォールバック）
- *   "title"?: string,
- *   "type"?: string,
- *   "date"?: string,
- *   "tags"?: string[],
- *   "assets"?: {
- *     "image"?: string,                // サムネイル画像（thumbnailより優先）
- *     "md"?: string,                   // Markdownファイルのリンク（content配下）
- *     "midi"?: string,                 // MIDIファイルのリンク（将来の拡張）
- *     "wav"?: string                   // WAVファイルのリンク（将来の拡張）
- *   }
- * }
- * 
- * 使用フィールド:
- * - id: 必須
- * - url: サムネイル取得用のURL（YouTube、SoundCloudなど）
- * - thumbnail: 直接サムネイルURL
- * - title: タイトル表示
- * - type: タイプ表示
- * - date: 日付表示
- * - tags: タグ表示
- * - assets.image: サムネイル画像（最優先）
- * - assets.md: Markdownファイルのリンク（ツールチップ表示用）
- * 
- * サムネイル取得ロジック:
- * 1. assets.imageが指定されている場合、それを最優先
- * 2. thumbnailが直接指定されている場合、それを使用
- * 3. urlが指定されている場合、urlの種類に応じて自動取得
- *    - YouTube: https://www.youtube.com/watch?v=VIDEO_ID → https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg
- *    - SoundCloud: oEmbed APIから取得
- *    - その他: urlをそのまま使用
- * 4. どちらもない場合、プレースホルダーを表示
+ *
+ * 必須スキーマ: id, title, date, tags（type は廃止・tags に統合）
+ * ソート: 日付順 / 日付逆順
+ * 絞り込み: タグ（選択したタグを含むアイテムのみ表示）
  */
 
-import { extractVideoId, executeAction } from './utils.js';
-
-// URLからサムネイルURLを取得
-function getThumbnailFromUrl(url) {
-    if (!url) return null;
-    
-    // YouTube
-    if (url.includes('youtube.com') || url.includes('youtu.be')) {
-        const videoId = extractVideoId(url);
-        if (videoId) {
-            return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-        }
-    }
-    
-    // SoundCloud
-    if (url.includes('soundcloud.com')) {
-        // oEmbed APIから取得（非同期）
-        return null; // 非同期処理が必要なため、後で処理
-    }
-    
-    // その他のURLはそのまま使用
-    return url;
-}
-
-// Table View用のサムネイルURL取得
-function getTableThumbnailUrl(item) {
-    // 1. assets.imageが最優先
-    if (item.assets && item.assets.image) {
-        return item.assets.image;
-    }
-    
-    // 2. thumbnailが直接指定されている場合
-    if (item.thumbnail) {
-        return item.thumbnail;
-    }
-    
-    // 3. urlから取得を試みる
-    if (item.url) {
-        const thumbnailUrl = getThumbnailFromUrl(item.url);
-        if (thumbnailUrl) {
-            return thumbnailUrl;
-        }
-    }
-    
-    // 4. どちらもない場合、空文字を返す（プレースホルダーを表示）
-    return '';
-}
+import { extractVideoId, getThumbnailUrlForItem, getViewTransitionName, executeAction } from './utils.js';
 
 /**
  * @param {HTMLElement} container
- * @param {{ sortOrder?: 'asc'|'desc', filterType?: string }} [options]
- * @param {Array} [items] - 渡されない場合は fetch する
+ * @param {{ sortOrder?: 'asc'|'desc', filterTag?: string }} [options]
+ * @param {Array} [items]
  */
 export async function renderTable(container, options = {}, items = null) {
     if (!container) {
@@ -99,7 +20,7 @@ export async function renderTable(container, options = {}, items = null) {
     }
 
     const sortOrder = options.sortOrder || 'asc';
-    const filterType = options.filterType || '';
+    const filterTag = (options.filterTag || '').trim();
 
     container.innerHTML = '<p class="loading-msg">Loading...</p>';
     container.style.display = 'block';
@@ -117,15 +38,18 @@ export async function renderTable(container, options = {}, items = null) {
             throw new Error('データが配列形式ではありません');
         }
 
-        // Type で絞り込み
-        let filtered = filterType
-            ? data.filter(item => item.type === filterType)
+        // タグで絞り込み（指定タグを1つ以上含むアイテム）
+        let filtered = filterTag
+            ? data.filter(item => Array.isArray(item.tags) && item.tags.includes(filterTag))
             : data;
 
-        // 追加順 / 追加順（逆）
-        if (sortOrder === 'desc') {
-            filtered = [...filtered].reverse();
-        }
+        // 日付でソート（日付文字列で比較。未設定は末尾）
+        filtered = [...filtered].sort((a, b) => {
+            const da = a.date || '';
+            const db = b.date || '';
+            const cmp = da.localeCompare(db);
+            return sortOrder === 'desc' ? -cmp : cmp;
+        });
 
         console.log('Table View: データ取得成功', filtered.length, '件');
 
@@ -142,7 +66,6 @@ export async function renderTable(container, options = {}, items = null) {
                 <tr>
                     <th>Thumbnail</th>
                     <th>Title</th>
-                    <th>Type</th>
                     <th>Date</th>
                     <th>Tags</th>
                 </tr>
@@ -164,40 +87,32 @@ export async function renderTable(container, options = {}, items = null) {
     }
 }
 
-// view-transition-name用にIDをサニタイズ（CSS識別子として有効な形式に）
-function getViewTransitionName(id) {
-    return 'item-' + String(id).replace(/[^a-zA-Z0-9-_]/g, '-');
-}
-
 function createTableRow(item) {
     const row = document.createElement('tr');
     row.setAttribute('data-id', item.id);
     row.style.viewTransitionName = getViewTransitionName(item.id);
-    
+
     // サムネイル
     const thumbnailCell = document.createElement('td');
     const thumbnailImg = document.createElement('img');
-    const thumbnailUrl = getTableThumbnailUrl(item);
-    
+    const thumbnailUrl = getThumbnailUrlForItem(item);
+
     if (thumbnailUrl) {
         thumbnailImg.src = thumbnailUrl;
     } else {
-        // プレースホルダー
         thumbnailImg.src = `data:image/svg+xml,${encodeURIComponent(`
             <svg xmlns="http://www.w3.org/2000/svg" width="80" height="45">
                 <rect fill="#f0f0f0" width="80" height="45"/>
-                <text fill="#999" font-family="sans-serif" font-size="10" dy="10.5" font-weight="bold" 
-                      x="50%" y="50%" text-anchor="middle">${item.type || item.id}</text>
+                <text fill="#999" font-family="sans-serif" font-size="10" dy="10.5" font-weight="bold"
+                      x="50%" y="50%" text-anchor="middle">${(item.title || item.id).toString().slice(0, 8)}</text>
             </svg>
         `)}`;
     }
-    
+
     thumbnailImg.alt = item.title || item.id;
     thumbnailImg.className = 'table-thumbnail';
-    
-    // 画像読み込みエラー時の処理
+
     thumbnailImg.onerror = function() {
-        // YouTubeの場合は、hqdefaultを試す
         if (item.url && (item.url.includes('youtube.com') || item.url.includes('youtu.be'))) {
             const videoId = extractVideoId(item.url);
             if (videoId) {
@@ -205,88 +120,46 @@ function createTableRow(item) {
                 return;
             }
         }
-        
-        // SoundCloudの場合は、oEmbed APIから取得を試す
         if (item.url && item.url.includes('soundcloud.com')) {
             fetch(`https://soundcloud.com/oembed?url=${encodeURIComponent(item.url)}&format=json`)
-                .then(response => {
-                    if (response.ok) {
-                        return response.json();
-                    }
-                    throw new Error('SoundCloud API error');
-                })
-                .then(data => {
-                    if (data.thumbnail_url) {
-                        this.src = data.thumbnail_url;
-                    } else {
-                        this.onerror();
-                    }
-                })
-                .catch(err => {
-                    console.log('SoundCloud thumbnail fetch failed:', err);
-                    this.src = `data:image/svg+xml,${encodeURIComponent(`
-                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="45">
-                            <rect fill="#f0f0f0" width="80" height="45"/>
-                            <text fill="#999" font-family="sans-serif" font-size="10" dy="10.5" font-weight="bold" 
-                                  x="50%" y="50%" text-anchor="middle">${item.type || item.id}</text>
-                        </svg>
-                    `)}`;
-                });
+                .then(response => response.ok ? response.json() : Promise.reject())
+                .then(data => { if (data.thumbnail_url) this.src = data.thumbnail_url; })
+                .catch(() => {});
             return;
         }
-        
-        // その他のエラーの場合、プレースホルダーを表示
         this.src = `data:image/svg+xml,${encodeURIComponent(`
             <svg xmlns="http://www.w3.org/2000/svg" width="80" height="45">
                 <rect fill="#f0f0f0" width="80" height="45"/>
-                <text fill="#999" font-family="sans-serif" font-size="10" dy="10.5" font-weight="bold" 
-                      x="50%" y="50%" text-anchor="middle">${item.type || item.id}</text>
+                <text fill="#999" font-family="sans-serif" font-size="10" x="50%" y="50%" text-anchor="middle" dy=".35em">-</text>
             </svg>
         `)}`;
     };
-    
+
     thumbnailCell.appendChild(thumbnailImg);
-    
-    // SoundCloudのサムネイルを非同期で取得（初期表示後に更新）
+
     if (item.url && item.url.includes('soundcloud.com') && !item.thumbnail && !item.assets?.image) {
         fetch(`https://soundcloud.com/oembed?url=${encodeURIComponent(item.url)}&format=json`)
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
-                }
-                throw new Error('SoundCloud API error');
-            })
-            .then(data => {
-                if (data.thumbnail_url) {
-                    thumbnailImg.src = data.thumbnail_url;
-                }
-            })
-            .catch(err => {
-                console.log('SoundCloud thumbnail fetch failed:', err);
-            });
+            .then(response => response.ok ? response.json() : Promise.reject())
+            .then(data => { if (data.thumbnail_url) thumbnailImg.src = data.thumbnail_url; })
+            .catch(() => {});
     }
-    
+
     // タイトル
     const titleCell = document.createElement('td');
     titleCell.textContent = item.title || item.id;
     titleCell.className = 'table-title';
-    
-    // タイプ
-    const typeCell = document.createElement('td');
-    typeCell.textContent = item.type || '-';
-    typeCell.className = 'table-type';
-    
+
     // 日付
     const dateCell = document.createElement('td');
     dateCell.textContent = item.date || '-';
     dateCell.className = 'table-date';
-    
-    // タグ
+
+    // タグ（type は廃止、tags に統合。旧 type も tags に含めている場合はここに表示）
     const tagsCell = document.createElement('td');
     const tagsContainer = document.createElement('div');
     tagsContainer.className = 'table-tags';
     if (item.tags && item.tags.length > 0) {
-        item.tags.forEach(tag => {
+        [...item.tags].sort((a, b) => String(a).localeCompare(String(b))).forEach(tag => {
             const tagSpan = document.createElement('span');
             tagSpan.className = 'table-tag';
             tagSpan.textContent = tag;
@@ -296,29 +169,20 @@ function createTableRow(item) {
         tagsContainer.textContent = '-';
     }
     tagsCell.appendChild(tagsContainer);
-    
+
     row.appendChild(thumbnailCell);
     row.appendChild(titleCell);
-    row.appendChild(typeCell);
     row.appendChild(dateCell);
     row.appendChild(tagsCell);
-    
-    // クリック時の動作（複数のアセットタイプがある場合の優先順位: wav > midi > md > url）
-    row.addEventListener('click', () => {
-        executeAction(item);
-    });
-    
-    // assets.mdがある場合は、ツールチップとして表示
+
+    row.addEventListener('click', () => executeAction(item));
+
     if (item.assets && item.assets.md) {
-        // Markdownファイルを読み込んでツールチップに表示
         fetch(item.assets.md)
             .then(response => response.text())
-            .then(markdown => {
-                const preview = markdown.substring(0, 200);
-                row.title = preview;
-            })
-            .catch(err => console.log('Markdown tooltip fetch failed:', err));
+            .then(markdown => { row.title = markdown.substring(0, 200); })
+            .catch(() => {});
     }
-    
+
     return row;
 }

@@ -30,16 +30,23 @@ jobs:
         with:
           enablement: true
 
+      - name: Prepare artifact
+        run: |
+          mkdir -p _site
+          rsync -a --exclude='_site' \
+            --exclude='.github/' \
+            --exclude='dev-server.sh' \
+            --exclude='history.md' \
+            --exclude='README.md' \
+            --exclude='.git' \
+            --exclude='writer/' \
+            --exclude='docs/' \
+            . _site/
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
-          exclude-paths: |
-            admin-app/
-            .github/
-            dev-server.sh
-            history.md
-            README.md
+          path: '_site'
 
       - name: Deploy to GitHub Pages
         id: deployment
