@@ -3,10 +3,10 @@
 # 使い方: ./start-writer.sh
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
-WRITER="$ROOT/writer"
+WRITER="$ROOT/apps/writer"
 
 if [ ! -f "$WRITER/package.json" ]; then
-  echo "エラー: writer/ が見つかりません。"
+  echo "エラー: apps/writer/ が見つかりません。"
   exit 1
 fi
 

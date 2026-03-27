@@ -17,13 +17,13 @@ Writer のフォームは**ビューごとに必要な項目**で構成してい
 
 ## タイプの分け方（write / picture / movie）
 
-メディアはすべて **`assets/`** に格納する。Writer が作成する type は次の3種類のみ。
+メディアはすべて **`pages/opus/assets/`** に格納する。Writer が作成する type は次の3種類のみ。
 
 | タイプ | 意味 | ギャラリーでの見え方 | 格納先・参照 |
 |--------|------|----------------------|--------------|
-| **write** | 1本の記事（Markdown）。本文中に画像・動画を**埋め込み**可能 | 記事1件として1カード。クリックで `article.html` で開く | `assets/{id}.md`、任意で `assets/{id}-card.*`。`assets.md` 必須、`assets.image` はカード用 |
-| **picture** | 画像**1枚**を単体のアイテムとして登録。長文記事は持たない | 画像1枚のカード。クリックで画像を表示 | `assets/{id}.{ext}`。`assets.image` のみ |
-| **movie** | 動画**1本**を単体のアイテムとして登録（YouTube URL またはファイル） | 動画1本のカード。クリックで再生またはURLへ | ファイル時は `assets/{filename}`、外部は `url` のみ |
+| **write** | 1本の記事（Markdown）。本文中に画像・動画を**埋め込み**可能 | 記事1件として1カード。クリックで `pages/opus/article/` で開く | `pages/opus/assets/{id}.md`、任意で `pages/opus/assets/{id}-card.*`。`assets.md` 必須、`assets.image` はカード用 |
+| **picture** | 画像**1枚**を単体のアイテムとして登録。長文記事は持たない | 画像1枚のカード。クリックで画像を表示 | `pages/opus/assets/{id}.{ext}`。`assets.image` のみ |
+| **movie** | 動画**1本**を単体のアイテムとして登録（YouTube URL またはファイル） | 動画1本のカード。クリックで再生またはURLへ | ファイル時は `pages/opus/assets/{filename}`、外部は `url` のみ |
 
 ### 使い分けの目安
 
@@ -31,7 +31,7 @@ Writer のフォームは**ビューごとに必要な項目**で構成してい
 - **画像1枚（picture）**: 写真・イラストを1枚だけギャラリーに並べたいとき。タイトル・タグのみ。
 - **動画1本（movie）**: YouTube や1本の動画をギャラリーに並べたいとき。タイトル・タグのみ。
 
-記事（write）内で画像・動画をリンクする場合は、同じ `assets/` に保存したファイルを Markdown の `![](path)` やリンクで参照する。それらは**ギャラリーの別アイテムにはならない**（記事の一部）。
+記事（write）内で画像・動画をリンクする場合は、同じ `pages/opus/assets/` に保存したファイルを Markdown の `![](path)` やリンクで参照する。それらは**ギャラリーの別アイテムにはならない**（記事の一部）。
 
 ## 仮保存（下書き）
 
@@ -39,23 +39,23 @@ Writer のフォームは**ビューごとに必要な項目**で構成してい
 
 - **仮保存**: 「仮保存」ボタンで下書きとして追加。同じ ID・タイプの下書きが既にあれば上書き。
 - **下書き一覧**: フォーム下の「下書き一覧」で一覧表示。**読み込む**でフォームに復元、**削除**で下書きを消す。
-- **本保存**: 「本保存（items.json に追加）」でサーバーに送信し、`data/items.json` と `assets/` を更新する。**新規 ID のみ**（既存 ID の場合はエラー）。保存後はフォームをクリアする。
+- **本保存**: 「本保存（items.json に追加）」でサーバーに送信し、`pages/opus/data/items.json` と `pages/opus/assets/` を更新する。**新規 ID のみ**（既存 ID の場合はエラー）。保存後はフォームをクリアする。
 - **投稿して続ける**: 現在の内容をそのまま公開し、フォームはクリアしない。ID が未登録なら新規追加、既存なら上書き。シリーズものなど「いったん公開してから続きを書く」向け。
 
 下書きは端末のブラウザ内のみに保存されるため、別デバイスには同期されない。
 
 ## ウィキリンク
 
-記事内の **`[[id]]`** は表示時に `/assets/id.md` へのリンクに変換される。**`[[id|表示テキスト]]`** も対応。
+記事内の **`[[id]]`** は表示時に `/pages/opus/assets/id.md` へのリンクに変換される。**`[[id|表示テキスト]]`** も対応。
 
 ## アプリ構成
 
-Writer 関連はすべて **`writer/`** にまとまっています。
+Writer 関連はすべて **`apps/writer/`** にまとまっています。
 
-- **バックエンド**: `writer/server.js`（Node.js + Express）。親ディレクトリの data / assets を参照。メディアはすべて assets に保存。`/` でギャラリー、`/writer/` で Writer を配信。
-- **フロント**: `writer/index.html` + `writer/writer.js` + `writer/writer.css`。3モード（記事 / 画像1枚 / 動画1本）で入力し、仮保存（localStorage）または API で本保存。
-- **出力**: `data/items.json` の更新、`assets/` への .md・画像・動画の保存。
-- **起動**: `cd writer && npm install && npm start` → ギャラリー http://127.0.0.1:3333/ 、Writer http://127.0.0.1:3333/writer/
+- **バックエンド**: `apps/writer/server.js`（Node.js + Express）。親ディレクトリの `pages/opus/data` / `pages/opus/assets` を参照。メディアはすべて `pages/opus/assets` に保存。`/` でギャラリー、`/writer/` で Writer を配信。
+- **フロント**: `apps/writer/index.html` + `apps/writer/writer.js` + `apps/writer/writer.css`。3モード（記事 / 画像1枚 / 動画1本）で入力し、仮保存（localStorage）または API で本保存。
+- **出力**: `pages/opus/data/items.json` の更新、`pages/opus/assets/` への .md・画像・動画の保存。
+- **起動**: `cd apps/writer && npm install && npm start` → ギャラリー http://127.0.0.1:3333/ 、Writer http://127.0.0.1:3333/writer/
 
 ## API（案）
 

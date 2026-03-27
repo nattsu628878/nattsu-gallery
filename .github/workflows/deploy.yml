@@ -39,7 +39,7 @@ jobs:
             --exclude='history.md' \
             --exclude='README.md' \
             --exclude='.git' \
-            --exclude='writer/' \
+            --exclude='apps/' \
             --exclude='docs/' \
             . _site/
 

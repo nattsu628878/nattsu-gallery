@@ -1,6 +1,0 @@
-/* メインスタイルシート - 共通スタイルと各ビューのスタイルを読み込む */
-
-@import url('styles/common.css');
-@import url('styles/grid-view.css');
-@import url('styles/table-view.css');
-@import url('styles/simple-view.css');

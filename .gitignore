@@ -1,4 +1,4 @@
-# 依存関係（Writer は writer/ 内のみ）
+# 依存関係（Writer は apps/writer/ 内のみ）
 node_modules/
 
 # 環境・編集用

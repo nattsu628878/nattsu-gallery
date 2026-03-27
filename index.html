@@ -3,54 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>nattsu Gallery</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="/site-static/nattsu_320_320_tt.ico" type="image/x-icon" sizes="any">
+    <link rel="apple-touch-icon" href="/site-static/nattsu_320_320_tt.png">
+    <title>natʇsu</title>
+    <meta http-equiv="refresh" content="0; url=/pages/opus/">
+    <script>
+      (function () {
+        const params = new URLSearchParams(window.location.search);
+        const mode = params.get('mode');
+        if (mode === 'about') {
+          window.location.replace('/pages/aboutme/' + window.location.hash);
+          return;
+        }
+        if (mode === 'nt') {
+          window.location.replace('/pages/nt/' + window.location.hash);
+          return;
+        }
+        window.location.replace('/pages/opus/' + window.location.search + window.location.hash);
+      })();
+    </script>
 </head>
 <body>
-    <div class="container">
-      <header>
-        <h1 class="header-title">Gallery</h1>
-        <div class="header-controls">
-          <div id="headerGridControls" class="header-view-controls" style="display: none;">
-            <div class="setting-item">
-              <label for="gridCardShape">Shape</label>
-              <select id="gridCardShape">
-                <option value="fit">Fit</option>
-                <option value="square">Square</option>
-              </select>
-            </div>
-          </div>
-          <div id="headerTableControls" class="header-view-controls" style="display: none;">
-            <div class="setting-item">
-              <label for="sortOrderTable">Sort</label>
-              <select id="sortOrderTable">
-                <option value="asc">Date</option>
-                <option value="desc">Date (rev)</option>
-              </select>
-            </div>
-            <div class="setting-item">
-              <label for="filterTagTable">Tag</label>
-              <select id="filterTagTable">
-                <option value="">All</option>
-              </select>
-            </div>
-          </div>
-          <div class="view-toggle">
-            <button id="gridViewBtn" class="view-btn active">Grid</button>
-            <button id="tableViewBtn" class="view-btn">Table</button>
-            <button id="simpleViewBtn" class="view-btn">Simple</button>
-          </div>
-        </div>
-      </header>
-        <main>
-            <div class="gallery" id="gallery">
-                <p class="loading-msg">Loading...</p>
-            </div>
-            <div class="table-view" id="tableView" style="display: none;"></div>
-            <div class="simple-view" id="simpleView" style="display: none;"></div>
-        </main>
-    </div>
-
-    <script type="module" src="app.js"></script>
+    <p><a href="/pages/opus/">Go to opus page</a></p>
 </body>
 </html>
