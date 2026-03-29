@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/site-static/nattsu_320_320_tt.ico" type="image/x-icon" sizes="any">
+  <title>article-editer</title>
+  <link rel="stylesheet" href="article-editer.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <span class="title">article-editer</span>
+    </header>
+    <main class="main ae-layout">
+      <section class="data-section">
+        <div class="data-section-header">
+          <button type="button" id="addRowBtn" class="btn btn-primary">＋</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="col-id">ID</th>
+                <th class="col-title">タイトル</th>
+                <th class="col-date">日付</th>
+                <th class="col-file">file</th>
+              </tr>
+            </thead>
+            <tbody id="articleTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+      <aside class="detail-section" id="detailSection">
+        <h2 class="detail-panel-title" id="detailPanelTitle"></h2>
+        <form id="detailForm" class="detail-form" style="display: none;">
+          <input type="hidden" id="detailIsNew" value="">
+          <div class="field">
+            <label for="aeId">ID</label>
+            <input type="text" id="aeId" required autocomplete="off" pattern="[a-zA-Z0-9_-]+">
+          </div>
+          <div class="field">
+            <label for="aeTitle">タイトル</label>
+            <input type="text" id="aeTitle">
+          </div>
+          <div class="field">
+            <label for="aeDate">日付</label>
+            <input type="date" id="aeDate">
+          </div>
+          <div class="field">
+            <label for="aeTags">タグ（カンマ）</label>
+            <input type="text" id="aeTags" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="aeFile">ファイル名</label>
+            <input type="text" id="aeFile" placeholder="example.md">
+          </div>
+          <div class="field">
+            <label for="aeMarkdown">Markdown</label>
+            <textarea id="aeMarkdown" rows="18"></textarea>
+          </div>
+          <div class="detail-actions">
+            <button type="button" id="aeSaveBtn" class="btn primary">保存</button>
+            <button type="button" id="aeDeleteBtn" class="btn btn-danger">削除</button>
+            <span id="aeStatus" class="status"></span>
+          </div>
+        </form>
+      </aside>
+    </main>
+  </div>
+  <script src="article-editer.js"></script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 #!/bin/bash
-# Opus Editer サーバーを起動（ギャラリー + エディタ）
-# 使い方: ./start-opus-editer.sh
+# ローカルサーバー起動（ギャラリー + Opus Editer + Article Editer）
+# 使い方: ./start-editer.sh
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 APP="$ROOT/apps/opus-editer"
@@ -16,7 +16,7 @@ if [ ! -d "$APP/node_modules" ]; then
   echo ""
 fi
 
-echo "📝 Opus Editer を起動しています..."
+echo "📝 ローカルサーバーを起動しています（ギャラリー + Opus Editer + Article Editer）..."
 echo "   （3333 が使用中なら 3334, 3335... で自動的に起動します）"
 echo ""
 echo "停止: Ctrl+C"

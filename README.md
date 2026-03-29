@@ -79,11 +79,16 @@ Browser-based media gallery and editor. Browse items in multiple views and manag
 | `pages/opus/js/utils.js` | Shared helpers (thumbnail/id extraction, actions) |
 | `pages/aboutme/index.html` | About Me page (independent mode page) |
 | `pages/nt/index.html` | NT page (independent mode page) |
+| `pages/article/index.html` | Article home (list from `articles.json`) |
+| `pages/article/view.html` | Single article (Markdown → HTML) |
+| `pages/article/data/articles.json` | Article manifest |
+| `pages/article/assets/` | Article `.md` files |
 | `apps/opus-editer/index.html` | Opus Editer UI entry |
 | `apps/opus-editer/opus-editer.js` | Opus Editer client logic |
-| `apps/opus-editer/server.js` | Opus Editer API server (`GET/POST/PUT/DELETE`) |
-| `pages/opus/data/items.json` | Item database |
-| `pages/opus/assets/` | Markdown/images/videos |
+| `apps/opus-editer/server.js` | Local API (Opus + Article Editer static + routes) |
+| `apps/article-editer/index.html` | Article Editer UI entry |
+| `pages/opus/data/items.json` | Opus item database |
+| `pages/opus/assets/` | Opus media |
 
 ## Dev Run
 
@@ -93,9 +98,10 @@ Browser-based media gallery and editor. Browse items in multiple views and manag
 ```
 
 ```bash
-./start-opus-editer.sh
+./start-editer.sh
 # Gallery: http://127.0.0.1:3333/
 # Opus Editer: http://127.0.0.1:3333/opus-editer/
+# Article Editer: http://127.0.0.1:3333/article-editer/
 ```
 
 ## Docs (reference only)

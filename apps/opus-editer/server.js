@@ -17,9 +17,15 @@ const DATA_DIR = path.join(ROOT, 'pages', 'opus', 'data');
 const ASSETS_DIR = path.join(ROOT, 'pages', 'opus', 'assets');
 const ITEMS_JSON = path.join(DATA_DIR, 'items.json');
 
+const ARTICLE_EDITER_DIR = path.join(ROOT, 'apps', 'article-editer');
+const ARTICLE_DATA_DIR = path.join(ROOT, 'pages', 'article', 'data');
+const ARTICLE_ASSETS_DIR = path.join(ROOT, 'pages', 'article', 'assets');
+const ARTICLES_JSON = path.join(ARTICLE_DATA_DIR, 'articles.json');
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(ROOT, { index: 'index.html' }));
 app.use('/opus-editer', express.static(OPUS_EDITER_DIR, { index: 'index.html' }));
+app.use('/article-editer', express.static(ARTICLE_EDITER_DIR, { index: 'index.html' }));
 
 function ensureDir(dir) {
   return fs.mkdir(dir, { recursive: true });
@@ -205,10 +211,143 @@ app.post('/api/entry', async (req, res) => {
   }
 });
 
+/* —— Article（pages/article、article-editer）—— */
+
+function sanitizeArticleId(id) {
+  if (!id || typeof id !== 'string') return null;
+  const s = id.trim();
+  if (!/^[a-zA-Z0-9_-]+$/.test(s)) return null;
+  return s.slice(0, 120);
+}
+
+function sanitizeMdFilename(name, fallbackId) {
+  if (name && typeof name === 'string') {
+    const base = path.basename(name.trim());
+    if (/\.md$/i.test(base)) {
+      return base.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 200);
+    }
+  }
+  if (fallbackId) return `${fallbackId}.md`;
+  return null;
+}
+
+async function readArticles() {
+  try {
+    const raw = await fs.readFile(ARTICLES_JSON, 'utf8');
+    const data = JSON.parse(raw);
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    if (e.code === 'ENOENT') return [];
+    throw e;
+  }
+}
+
+async function writeArticles(articles) {
+  await ensureDir(ARTICLE_DATA_DIR);
+  await fs.writeFile(ARTICLES_JSON, JSON.stringify(articles, null, 2), 'utf8');
+}
+
+app.get('/api/article/articles', async (req, res) => {
+  try {
+    const articles = await readArticles();
+    res.json(articles);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/article/articles', async (req, res) => {
+  try {
+    const body = req.body;
+    if (!Array.isArray(body)) return res.status(400).json({ error: 'articles は配列で送信してください' });
+    await writeArticles(body);
+    res.json({ ok: true, count: body.length });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/article/entry', async (req, res) => {
+  try {
+    const { title, date, tags, markdown, update: isUpdate } = req.body;
+    const trimmedId = sanitizeArticleId(req.body.id);
+    if (!trimmedId) {
+      return res.status(400).json({ error: 'id は英数字・_- のみで指定してください' });
+    }
+    const filename = sanitizeMdFilename(req.body.file, trimmedId);
+    if (!filename) {
+      return res.status(400).json({ error: 'file は .md のファイル名で指定してください' });
+    }
+
+    const articles = await readArticles();
+    const existingIndex = articles.findIndex((a) => a.id === trimmedId);
+    const isUpsert = isUpdate === true;
+
+    if (existingIndex >= 0 && !isUpsert) {
+      return res.status(400).json({ error: `id "${trimmedId}" は既に存在します` });
+    }
+    if (existingIndex < 0 && isUpsert) {
+      return res.status(400).json({ error: `id "${trimmedId}" が見つかりません` });
+    }
+
+    await ensureDir(ARTICLE_ASSETS_DIR);
+    const outPath = path.join(ARTICLE_ASSETS_DIR, filename);
+    await fs.writeFile(outPath, markdown != null ? String(markdown) : '', 'utf8');
+
+    const entry = {
+      id: trimmedId,
+      title: title && String(title).trim() || trimmedId,
+      date: date && String(date).trim() || undefined,
+      tags: Array.isArray(tags) ? tags.filter((t) => t && String(t).trim()).map((t) => String(t).trim()) : undefined,
+      file: filename,
+    };
+
+    if (existingIndex >= 0) {
+      articles[existingIndex] = entry;
+    } else {
+      articles.push(entry);
+    }
+    await writeArticles(articles);
+    res.json({ ok: true, article: entry, updated: existingIndex >= 0 });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/article/:id', async (req, res) => {
+  try {
+    const trimmedId = sanitizeArticleId(req.params.id);
+    if (!trimmedId) return res.status(400).json({ error: 'id が不正です' });
+    const articles = await readArticles();
+    const index = articles.findIndex((a) => a.id === trimmedId);
+    if (index < 0) return res.status(404).json({ error: '記事が見つかりません' });
+    const entry = articles[index];
+    const name = entry.file ? path.basename(entry.file) : null;
+    if (name) {
+      const fp = path.join(ARTICLE_ASSETS_DIR, name);
+      try {
+        await fs.unlink(fp);
+      } catch (e) {
+        if (e.code !== 'ENOENT') console.error('unlink article md', fp, e);
+      }
+    }
+    articles.splice(index, 1);
+    await writeArticles(articles);
+    res.json({ ok: true, deleted: trimmedId });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 function tryListen(port) {
   const server = app.listen(port, '127.0.0.1', () => {
     console.log(`Gallery: http://127.0.0.1:${port}/`);
     console.log(`Opus Editer: http://127.0.0.1:${port}/opus-editer/`);
+    console.log(`Article Editer: http://127.0.0.1:${port}/article-editer/`);
   });
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE' && port < PORT_END) {
