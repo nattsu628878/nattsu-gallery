@@ -1,6 +1,7 @@
 import { renderSimple } from '../views/simple-view.js';
 import { renderGrid } from '../views/grid-view.js';
 import { renderTable } from '../views/table-view.js';
+import { filterItemsByType, getTypeFilterState } from '../features/filters/type-filter.js';
 
 export const VALID_VIEWS = ['grid', 'table', 'simple'];
 
@@ -119,14 +120,21 @@ export function createOpusRenderer() {
                     updateTagsFilterOptions(items);
                     const sortOrder = document.getElementById('sortOrderTable')?.value || 'asc';
                     const filterTag = document.getElementById('filterTagTable')?.value || '';
-                    await renderTable(tableView, { sortOrder, filterTag }, items);
+                    const filtered = filterItemsByType(items, getTypeFilterState());
+                    await renderTable(tableView, { sortOrder, filterTag }, filtered);
                 }
             } else if (view === 'simple') {
-                if (simpleView) await renderSimple(simpleView);
+                if (simpleView) {
+                    const items = await fetchItems();
+                    currentItems = items;
+                    const filtered = filterItemsByType(items, getTypeFilterState());
+                    await renderSimple(simpleView, {}, filtered);
+                }
             } else if (gallery) {
                 const items = await fetchItems();
                 currentItems = items;
-                await renderGrid(gallery, {}, items);
+                const filtered = filterItemsByType(items, getTypeFilterState());
+                await renderGrid(gallery, {}, filtered);
                 if (applyGridCardShape) applyGridCardShape();
             }
             currentVisibleContainer = targetContainer;
@@ -145,7 +153,8 @@ export function createOpusRenderer() {
         if (!tableView || currentItems.length === 0) return;
         const sortOrder = document.getElementById('sortOrderTable')?.value || 'asc';
         const filterTag = document.getElementById('filterTagTable')?.value || '';
-        await renderTable(tableView, { sortOrder, filterTag }, currentItems);
+        const filtered = filterItemsByType(currentItems, getTypeFilterState());
+        await renderTable(tableView, { sortOrder, filterTag }, filtered);
     }
 
     return { renderOpusView, reRenderTable };

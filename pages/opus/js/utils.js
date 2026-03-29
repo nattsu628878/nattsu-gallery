@@ -59,14 +59,8 @@ export function getViewTransitionName(id) {
 }
 
 // アイテムのクリックアクションを実行
-// 複数のアセットタイプがある場合の優先順位:
-// 1. picture: 画像を新しいタブで表示
-// 2. wav (音声ファイル)
-// 3. midi (MIDIファイル)
-// 4. md (Markdown説明文)
-// 5. url (外部リンク)
+// 優先: picture 画像 → wav / midi → url
 export function executeAction(item) {
-    // 画像1枚: 画像URLを新しいタブで開く
     if (item.type === 'picture') {
         const imgUrl = item.assets?.image || item.thumbnail;
         if (imgUrl) {
@@ -76,7 +70,6 @@ export function executeAction(item) {
     }
 
     if (item.assets) {
-        // 優先順位: wav > midi > md
         if (item.assets.wav) {
             window.open(`audioplayer.html?file=${encodeURIComponent(item.assets.wav)}`, '_blank');
             return;
@@ -85,17 +78,8 @@ export function executeAction(item) {
             window.open(`midi.html?file=${encodeURIComponent(item.assets.midi)}`, '_blank');
             return;
         }
-        if (item.assets.md) {
-            let url = `/pages/opus/article/?file=${encodeURIComponent(item.assets.md)}`;
-            if (item.title) {
-                url += `&title=${encodeURIComponent(item.title)}`;
-            }
-            window.open(url, '_blank');
-            return;
-        }
     }
 
-    // それ以外はurlを開く
     if (item.url) {
         window.open(item.url, '_blank');
     }
@@ -116,25 +100,7 @@ export function showDetailPanel(item) {
     typeEl.textContent = item.type || '';
     typeEl.className = 'detail-type';
 
-    // summaryまたはassets.mdから表示（assets.mdがある場合はファイルを読み込む）
-    if (item.assets && item.assets.md) {
-        fetch(item.assets.md)
-            .then(response => response.text())
-            .then(markdown => {
-                // Markdownの最初の数行を取得（見出しを除く）
-                const lines = markdown.split('\n').filter(line => {
-                    line = line.trim();
-                    return line && !line.startsWith('#') && line.length > 0;
-                });
-                const preview = lines.slice(0, 3).join(' ').substring(0, 200) + '...';
-                summaryEl.textContent = preview;
-                summaryEl.style.display = 'block';
-            })
-            .catch(err => {
-                console.log('Markdown summary fetch failed:', err);
-                summaryEl.style.display = 'none';
-            });
-    } else if (item.summary) {
+    if (item.summary) {
         summaryEl.textContent = item.summary;
         summaryEl.style.display = 'block';
     } else {

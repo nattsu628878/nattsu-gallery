@@ -2,7 +2,7 @@
  * Grid View（シンプル版）
  *
  * スキーマ: id（必須）, title, 画像（assets.image / thumbnail / url から取得）
- * 順番はランダム。段々表示（1段目は右方向、2段目は左方向に流れるアニメーション）。
+ * 順番はランダム。段ごとに左右交互の無限横スクロール。
  * ホバーでタイトルを小さく表示。詳細窓はなし。
  */
 
@@ -60,9 +60,17 @@ export async function renderGrid(container, options = {}, items = null) {
     rows.forEach((rowItems, rowIndex) => {
       const row = document.createElement('div');
       row.className = 'grid-row ' + (rowIndex % 2 === 0 ? 'grid-row--right' : 'grid-row--left');
+
+      const track = document.createElement('div');
+      track.className = 'grid-row-track';
       rowItems.forEach((item) => {
-        row.appendChild(createMediaCard(item, rowIndex));
+        track.appendChild(createMediaCard(item, rowIndex, false));
       });
+      rowItems.forEach((item) => {
+        track.appendChild(createMediaCard(item, rowIndex, true));
+      });
+
+      row.appendChild(track);
       container.appendChild(row);
     });
   } catch (error) {
@@ -72,11 +80,18 @@ export async function renderGrid(container, options = {}, items = null) {
   }
 }
 
-function createMediaCard(item, rowIndex) {
+/**
+ * @param {boolean} duplicate - 無限スクロール用の複製列（View Transition / a11y 用に区別）
+ */
+function createMediaCard(item, rowIndex, duplicate = false) {
   const card = document.createElement('div');
   card.className = 'media-card';
   card.setAttribute('data-id', item.id);
-  card.style.viewTransitionName = getViewTransitionName(item.id);
+  if (!duplicate) {
+    card.style.viewTransitionName = getViewTransitionName(item.id);
+  } else {
+    card.setAttribute('aria-hidden', 'true');
+  }
 
   const thumbnail = document.createElement('div');
   thumbnail.className = 'thumbnail';

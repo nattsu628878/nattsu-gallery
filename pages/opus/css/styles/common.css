@@ -6,6 +6,11 @@
     --accent-bg: rgba(98, 136, 120, 0.15);
 }
 
+/* 縦スクロールバーの有無でレイアウト幅が変わらないようにする（ヘッダー等の見た目のズレ防止） */
+html {
+    scrollbar-gutter: stable;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -117,6 +122,46 @@ header {
     background: var(--accent);
     color: #fff;
     border-color: var(--accent);
+}
+
+.header-type-filters {
+    flex-shrink: 0;
+}
+
+.type-filter-group {
+    gap: 0.35rem;
+}
+
+.type-filter-label {
+    color: #888;
+    white-space: nowrap;
+    font-size: 0.7rem;
+}
+
+.filter-toggle {
+    padding: 0.25rem 0.55rem;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #666;
+    font-size: 0.7rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.filter-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.filter-toggle--on {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+.filter-toggle--off {
+    opacity: 0.42;
 }
 
 .header-view-controls {

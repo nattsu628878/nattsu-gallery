@@ -177,13 +177,6 @@ function createTableRow(item) {
 
     row.addEventListener('click', () => executeAction(item));
 
-    if (item.assets && item.assets.md) {
-        fetch(item.assets.md)
-            .then(response => response.text())
-            .then(markdown => { row.title = markdown.substring(0, 200); })
-            .catch(() => {});
-    }
-
     return row;
 }
 

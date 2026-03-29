@@ -25,9 +25,16 @@
               <div class="setting-item">
                 <label for="gridCardShape">Shape</label>
                 <select id="gridCardShape">
-                  <option value="fit">Fit</option>
+                  <option value="fit" selected>Fit</option>
                   <option value="square">Square</option>
                 </select>
+              </div>
+            </div>
+            <div id="headerTypeFilters" class="header-view-controls header-type-filters">
+              <div class="setting-item type-filter-group">
+                <span class="type-filter-label">Type</span>
+                <button type="button" class="filter-toggle filter-toggle--on" id="filterToggleMovie" data-type-filter="movie" aria-pressed="true">Video</button>
+                <button type="button" class="filter-toggle filter-toggle--on" id="filterTogglePicture" data-type-filter="picture" aria-pressed="true">Image</button>
               </div>
             </div>
             <div id="headerTableControls" class="header-view-controls" style="display: none;">

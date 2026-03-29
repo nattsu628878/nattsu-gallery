@@ -1,5 +1,6 @@
 import { createOpusRenderer, VALID_VIEWS } from '../opus/opus-mode.js';
 import { applyGridCardShape, loadOpusSettings, setupOpusSettings } from '../features/settings/opus-settings.js';
+import { setupTypeFilter } from '../features/filters/type-filter.js';
 
 let currentView = 'grid';
 
@@ -95,6 +96,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     setupViewToggle();
     setupModeToggle();
+    setupTypeFilter(async () => {
+        await renderOpusView();
+    });
     await renderOpusView();
 });
 

@@ -1,6 +1,6 @@
 # nattsu - Project Overview
 
-Browser-based media gallery and editor. Browse items in multiple views, open markdown articles, and manage `items.json` + assets with the Writer app.
+Browser-based media gallery and editor. Browse items in multiple views and manage `items.json` + assets with the Opus Editer app (local-only).
 
 ## Screenshot
 
@@ -10,7 +10,7 @@ Browser-based media gallery and editor. Browse items in multiple views, open mar
 
 - HTML + CSS
 - Vanilla JavaScript (ES modules)
-- Node.js + Express (Writer local server)
+- Node.js + Express (Opus Editer local server)
 - JSON (`pages/opus/data/items.json` for project state)
 - GitHub Actions + GitHub Pages (deploy)
 
@@ -19,7 +19,7 @@ Browser-based media gallery and editor. Browse items in multiple views, open mar
 | Item | Description |
 | --- | --- |
 | Entry | `index.html` (redirect) -> `pages/opus/index.html` -> `pages/opus/js/main.js` |
-| UI | Two-row header on Opus page (Mode + Opus subview), dedicated About Me / NT pages, article page, Writer (database table + detail panel) |
+| UI | Two-row header on Opus page (Mode + Opus subview), dedicated About Me / NT pages, Opus Editer (database table + detail panel) |
 | Data | `pages/opus/data/items.json` (id/title/type/date/tags/url/assets) |
 
 ## Layout
@@ -30,8 +30,7 @@ Browser-based media gallery and editor. Browse items in multiple views, open mar
   - `pages/opus/`: gallery rendering system
   - `pages/aboutme/`: profile and social links
   - `pages/nt/`: project area
-- Writer: Left = database table (inline edit, add/delete/reorder), Right = detail settings panel.
-- Article page: Loads markdown from `pages/opus/assets/*.md` and renders in browser.
+- Opus Editer: Left = database table (inline edit, add/delete/reorder), Right = detail settings panel (image / video only).
 
 ## Navigation State
 
@@ -47,7 +46,6 @@ Browser-based media gallery and editor. Browse items in multiple views, open mar
 
 ## Item kinds
 
-- `write` - Markdown-based article (`assets.md`)
 - `picture` - Single image item (`assets.image`)
 - `movie` - Video item (YouTube URL or local file)
 
@@ -60,9 +58,9 @@ Browser-based media gallery and editor. Browse items in multiple views, open mar
 
 ## Save / Load
 
-- Save (Writer): creates/updates item data under `pages/opus/data/items.json` and related files under `pages/opus/assets/`
+- Save (Opus Editer): creates/updates item data under `pages/opus/data/items.json` and related files under `pages/opus/assets/`
 - Load (Gallery): reads `pages/opus/data/items.json` and renders selected view
-- Reorder (Writer): persists order with `PUT /api/items`
+- Reorder (Opus Editer): persists order with `PUT /api/items`
 
 ## Main files
 
@@ -81,12 +79,9 @@ Browser-based media gallery and editor. Browse items in multiple views, open mar
 | `pages/opus/js/utils.js` | Shared helpers (thumbnail/id extraction, actions) |
 | `pages/aboutme/index.html` | About Me page (independent mode page) |
 | `pages/nt/index.html` | NT page (independent mode page) |
-| `pages/opus/article/index.html` | Article page HTML（Opus 内） |
-| `pages/opus/article/js/article.js` | Article page JS |
-| `pages/opus/article/css/article.css` | Article page CSS |
-| `apps/writer/index.html` | Writer UI entry |
-| `apps/writer/writer.js` | Writer client logic |
-| `apps/writer/server.js` | Writer API server (`GET/POST/PUT/DELETE`) |
+| `apps/opus-editer/index.html` | Opus Editer UI entry |
+| `apps/opus-editer/opus-editer.js` | Opus Editer client logic |
+| `apps/opus-editer/server.js` | Opus Editer API server (`GET/POST/PUT/DELETE`) |
 | `pages/opus/data/items.json` | Item database |
 | `pages/opus/assets/` | Markdown/images/videos |
 
@@ -98,15 +93,15 @@ Browser-based media gallery and editor. Browse items in multiple views, open mar
 ```
 
 ```bash
-./start-writer.sh
+./start-opus-editer.sh
 # Gallery: http://127.0.0.1:3333/
-# Writer : http://127.0.0.1:3333/writer/
+# Opus Editer: http://127.0.0.1:3333/opus-editer/
 ```
 
 ## Docs (reference only)
 
 - `schema.md` - Item schema
-- `docs/writer-design.md` - Writer design notes
+- `docs/opus-editer-design.md` - Opus Editer design notes
 
 ## Planned Phase 2
 

@@ -1,0 +1,12 @@
+{
+  "name": "nattsu-gallery-opus-editer",
+  "version": "1.0.0",
+  "description": "Opus items 編集（画像・動画・ローカル専用）",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
