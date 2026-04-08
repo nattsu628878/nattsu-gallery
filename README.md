@@ -19,17 +19,17 @@ Browser-based media gallery and editor. Browse items in multiple views and manag
 | Item | Description |
 | --- | --- |
 | Entry | `index.html` (redirect) -> `pages/opus/index.html` -> `pages/opus/js/main.js` |
-| UI | Two-row header on Opus page (Mode + Opus subview), dedicated About Me / NT pages, Opus Editer (database table + detail panel) |
+| UI | Two-row header on Opus page (Mode + Opus subview), dedicated About Me / Article pages, Opus Editer (database table + detail panel) |
 | Data | `pages/opus/data/items.json` (id/title/type/date/tags/url/assets) |
 
 ## Layout
 
-- Header Row 1: global mode switch (`Opus`, `About Me`, `NT`)
+- Header Row 1: global mode switch (`Opus`, `About Me`, `Article`)
 - Header Row 2: `Opus` subview switch (`Grid`, `Table`, `Simple`) + view controls
 - Pages:
   - `pages/opus/`: gallery rendering system
   - `pages/aboutme/`: profile and social links
-  - `pages/nt/`: project area
+  - `pages/article/`: article list and viewer
 - Opus Editer: Left = database table (inline edit, add/delete/reorder), Right = detail settings panel (image / video only).
 
 ## Navigation State
@@ -40,9 +40,9 @@ Browser-based media gallery and editor. Browse items in multiple views and manag
   - `pages/opus/?view=simple`
 - Top-level page routing:
   - `pages/aboutme/`
-  - `pages/nt/`
+  - `pages/article/`
 - Legacy compatibility:
-  - root `/?mode=about` and `/?mode=nt` are redirected by `index.html`.
+  - root `/?mode=about` is redirected by `index.html`.
 
 ## Item kinds
 
@@ -78,7 +78,6 @@ Browser-based media gallery and editor. Browse items in multiple views and manag
 | `pages/opus/js/views/simple-view.js` | Simple view rendering |
 | `pages/opus/js/utils.js` | Shared helpers (thumbnail/id extraction, actions) |
 | `pages/aboutme/index.html` | About Me page (independent mode page) |
-| `pages/nt/index.html` | NT page (independent mode page) |
 | `pages/article/index.html` | Article home (list from `articles.json`) |
 | `pages/article/view.html` | Single article (Markdown → HTML) |
 | `pages/article/data/articles.json` | Article manifest |
@@ -111,4 +110,4 @@ Browser-based media gallery and editor. Browse items in multiple views and manag
 
 ## Planned Phase 2
 
-- File system re-organization (example: feature-based split such as `features/opus`, `features/about`, `features/nt`)
+- File system re-organization (example: feature-based split such as `features/opus`, `features/about`, `features/article`)

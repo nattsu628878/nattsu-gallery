@@ -33,15 +33,10 @@ jobs:
       - name: Prepare artifact
         run: |
           mkdir -p _site
-          rsync -a --exclude='_site' \
-            --exclude='.github/' \
-            --exclude='dev-server.sh' \
-            --exclude='history.md' \
-            --exclude='README.md' \
-            --exclude='.git' \
-            --exclude='apps/' \
-            --exclude='docs/' \
-            . _site/
+          cp -a index.html _site/
+          cp -a pages _site/
+          cp -a site-static _site/
+          if [ -f CNAME ]; then cp -a CNAME _site/; fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
