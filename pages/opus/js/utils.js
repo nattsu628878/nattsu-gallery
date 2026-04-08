@@ -37,10 +37,26 @@ export function getThumbnailFromUrl(url) {
     return url;
 }
 
+function resolveSitePath(url) {
+    if (!url || typeof url !== 'string') return url;
+    // Absolute URL / data URL / blob URL are returned as-is.
+    if (/^(https?:)?\/\//.test(url) || url.startsWith('data:') || url.startsWith('blob:')) {
+        return url;
+    }
+    // Root-relative path needs repository prefix on GitHub Project Pages.
+    if (url.startsWith('/')) {
+        const path = window.location.pathname || '/';
+        const pagesIndex = path.indexOf('/pages/');
+        const basePrefix = pagesIndex >= 0 ? path.slice(0, pagesIndex) : '';
+        return `${basePrefix}${url}`;
+    }
+    return url;
+}
+
 // アイテムからサムネイルURLを取得（優先順: assets.image > thumbnail > url）
 export function getThumbnailUrlForItem(item) {
-    if (item.assets && item.assets.image) return item.assets.image;
-    if (item.thumbnail) return item.thumbnail;
+    if (item.assets && item.assets.image) return resolveSitePath(item.assets.image);
+    if (item.thumbnail) return resolveSitePath(item.thumbnail);
     if (item.url) {
         const fromUrl = getThumbnailFromUrl(item.url);
         if (fromUrl) return fromUrl;
@@ -62,7 +78,7 @@ export function getViewTransitionName(id) {
 // 優先: picture 画像 → wav / midi → url
 export function executeAction(item) {
     if (item.type === 'picture') {
-        const imgUrl = item.assets?.image || item.thumbnail;
+        const imgUrl = resolveSitePath(item.assets?.image || item.thumbnail);
         if (imgUrl) {
             window.open(imgUrl, '_blank');
             return;
