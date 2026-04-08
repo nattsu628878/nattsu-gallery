@@ -6,6 +6,8 @@
 const express = require('express');
 const fs = require('fs').promises;
 const path = require('path');
+const { execFile } = require('child_process');
+const { promisify } = require('util');
 
 const app = express();
 const PORT_START = parseInt(process.env.PORT, 10) || 3333;
@@ -21,6 +23,7 @@ const ARTICLE_EDITER_DIR = path.join(ROOT, 'apps', 'article-editer');
 const ARTICLE_DATA_DIR = path.join(ROOT, 'pages', 'article', 'data');
 const ARTICLE_ASSETS_DIR = path.join(ROOT, 'pages', 'article', 'assets');
 const ARTICLES_JSON = path.join(ARTICLE_DATA_DIR, 'articles.json');
+const execFileAsync = promisify(execFile);
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(ROOT, { index: 'index.html' }));
@@ -67,6 +70,30 @@ async function writeItems(items) {
 
 function sanitizeFilename(name) {
   return name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 200);
+}
+
+function isImageFilename(name) {
+  const ext = path.extname(String(name || '')).toLowerCase();
+  return ext === '.jpg' || ext === '.jpeg' || ext === '.png' || ext === '.webp';
+}
+
+async function saveImageAsWebp({ id, filename, base64Data }) {
+  const inputExt = (path.extname(filename) || '.png').toLowerCase();
+  const tempInput = path.join(ASSETS_DIR, `${id}__upload${inputExt}`);
+  const webpName = `${id}.webp`;
+  const webpPath = path.join(ASSETS_DIR, webpName);
+  await fs.writeFile(tempInput, Buffer.from(base64Data, 'base64'));
+  try {
+    await execFileAsync('cwebp', ['-quiet', '-q', '80', tempInput, '-o', webpPath]);
+    await fs.unlink(tempInput).catch(() => {});
+    return webpName;
+  } catch (_) {
+    // cwebp がない環境でも保存自体は失敗させない
+    const fallbackName = `${id}${inputExt}`;
+    const fallbackPath = path.join(ASSETS_DIR, fallbackName);
+    await fs.rename(tempInput, fallbackPath);
+    return fallbackName;
+  }
 }
 
 app.get('/api/items', async (req, res) => {
@@ -175,11 +202,22 @@ app.post('/api/entry', async (req, res) => {
       if (!image || !image.filename || !image.data) {
         return res.status(400).json({ error: '画像データ（image.filename, image.data）が必要です' });
       }
+      if (!isImageFilename(image.filename)) {
+        return res.status(400).json({ error: '画像は jpg/jpeg/png/webp のみ対応です' });
+      }
       await ensureDir(ASSETS_DIR);
-      const ext = path.extname(image.filename) || '.jpg';
-      const fileName = `${trimmedId}${ext}`;
-      const outPath = path.join(ASSETS_DIR, fileName);
-      await fs.writeFile(outPath, Buffer.from(image.data, 'base64'));
+      const fileName = await saveImageAsWebp({
+        id: trimmedId,
+        filename: image.filename,
+        base64Data: image.data,
+      });
+      if (isUpsert && existingIndex >= 0) {
+        const oldImage = items[existingIndex]?.assets?.image;
+        const oldName = assetPathToFilename(oldImage);
+        if (oldName && oldName !== fileName) {
+          await fs.unlink(path.join(ASSETS_DIR, oldName)).catch(() => {});
+        }
+      }
       item.assets = { image: `/pages/opus/assets/${fileName}` };
     } else {
       const { url, videoFile } = req.body;
