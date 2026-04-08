@@ -3,13 +3,7 @@ article
     obsidianのmdを全部アップロードすればそのまま見れるようにする。
     article editerは削除
 
-ntは一旦削除
-
 aboutme
-
-
-opusはほぼ完成かな
-
 
 ---
 新規
