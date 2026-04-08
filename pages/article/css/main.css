@@ -1,4 +1,4 @@
-@import url('/pages/opus/css/styles/common.css');
+@import url('../../opus/css/styles/common.css');
 @import url('./styles/article-home.css');
 @import url('./styles/article-list.css');
 @import url('./styles/article-view.css');

@@ -15,7 +15,7 @@ async function run() {
 
   let meta = null;
   try {
-    const res = await fetch('/pages/article/data/articles.json', { cache: 'no-store' });
+    const res = await fetch('./data/articles.json', { cache: 'no-store' });
     if (res.ok) {
       const list = await res.json();
       if (Array.isArray(list)) meta = list.find((a) => a && a.id === id);
@@ -32,7 +32,7 @@ async function run() {
   titleEl.textContent = displayTitle;
   document.title = `${displayTitle} - natʇsu`;
 
-  const mdPath = `/pages/article/assets/${encodeURIComponent(meta.file)}`;
+  const mdPath = `./assets/${encodeURIComponent(meta.file)}`;
   try {
     const mdRes = await fetch(mdPath, { cache: 'no-store' });
     if (!mdRes.ok) throw new Error(String(mdRes.status));

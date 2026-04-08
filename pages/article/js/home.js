@@ -6,7 +6,7 @@ async function loadArticles() {
   if (!listEl) return;
   listEl.innerHTML = '<li class="article-list-loading">…</li>';
   try {
-    const res = await fetch('/pages/article/data/articles.json', { cache: 'no-store' });
+    const res = await fetch('./data/articles.json', { cache: 'no-store' });
     if (!res.ok) throw new Error(String(res.status));
     const data = await res.json();
     if (!Array.isArray(data) || data.length === 0) {

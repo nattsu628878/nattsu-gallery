@@ -28,7 +28,7 @@ export async function renderTable(container, options = {}, items = null) {
     try {
         let data = items;
         if (!Array.isArray(data)) {
-            const response = await fetch('/pages/opus/data/items.json');
+            const response = await fetch('./data/items.json');
             if (!response.ok) {
                 throw new Error(`データの読み込みに失敗しました: ${response.status} ${response.statusText}`);
             }

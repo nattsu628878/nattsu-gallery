@@ -81,7 +81,7 @@ function runEnterAnimation(container) {
 }
 
 async function fetchItems() {
-    const response = await fetch('/pages/opus/data/items.json');
+    const response = await fetch('./data/items.json');
     if (!response.ok) throw new Error(`データの読み込みに失敗しました: ${response.status} ${response.statusText}`);
     const data = await response.json();
     if (!Array.isArray(data)) throw new Error('データが配列形式ではありません');

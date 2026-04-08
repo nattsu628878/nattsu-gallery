@@ -60,8 +60,8 @@ function setupModeToggle() {
     const modeAboutBtn = document.getElementById('modeAboutBtn');
     const modeArticleBtn = document.getElementById('modeArticleBtn');
     if (modeOpusBtn) modeOpusBtn.addEventListener('click', async () => renderOpusView());
-    if (modeAboutBtn) modeAboutBtn.addEventListener('click', () => { window.location.href = '/pages/aboutme/'; });
-    if (modeArticleBtn) modeArticleBtn.addEventListener('click', () => { window.location.href = '/pages/article/'; });
+    if (modeAboutBtn) modeAboutBtn.addEventListener('click', () => { window.location.href = '../aboutme/'; });
+    if (modeArticleBtn) modeArticleBtn.addEventListener('click', () => { window.location.href = '../article/'; });
 }
 
 let hasAnimatedHeaderRow = false;
