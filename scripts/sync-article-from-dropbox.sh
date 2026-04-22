@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
-# Dropbox/_md の中身を src/data/article/markdown にコピーするだけ
-# DROPBOX_ARTICLE_MD で元を上書き可
+# ~/Library/CloudStorage/Dropbox/_md の中身を src/data/article/markdown にコピーするだけ
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SRC="${DROPBOX_ARTICLE_MD:-$HOME/Library/CloudStorage/Dropbox/_md}"
+SRC="$HOME/Library/CloudStorage/Dropbox/_md"
 DEST="$ROOT/src/data/article/markdown"
 
 if [ ! -d "$SRC" ]; then

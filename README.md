@@ -1,3 +1,5 @@
+https://nattsu628878.github.io/nattsu-gallery
+
 # nattsu-gallery（自分用メモ）
 
 このリポジトリは、`Astro + Svelte` で動く個人サイトです。  
@@ -5,17 +7,12 @@
 
 ## コマンド
 
-- サイトのみ: `npm run dev`（Astro, `http://127.0.0.1:4321/…`）
-- **Opus エディタ付き**（Astro + `tools/opus-editor`）: `npm run dev:all` または `./start-editor.sh`
-- Opus エディタだけ: `npm run dev:opus-editor`（**先に** Astro を別ターミナルで起動しておくこと）
+- **開発（サイト全体）**: `./dev.sh`（Astro のみ。`npm run dev` の前に `predev` で Article アセット正規化）
+- **Opus Editor**: `./start-opus-editor.sh`（Astro + `tools/opus-editor` を同時起動。未導入の `node_modules` は自動で `npm install`）
 - ビルド: `npm run build`（`@astrojs/node` により静的ファイルは `dist/client`。GitHub Pages もここを公開）
 - プレビュー: `npm run preview`（Node アダプタのサーバでプレビュー）
 
-`tools/opus-editor` 初回は `cd tools/opus-editor && npm install` が必要（`start-editor.sh` では未導入時に自動で入る）。
-
-補足:
-- `npm run dev` の前に `predev` が自動実行される
-- `predev` では `scripts/normalize-article-assets.sh` が走る
+補足: `package.json` の `npm run dev` / `npm run dev:all` もそのまま使える。
 
 ## Article アセット運用ルール
 
@@ -53,14 +50,12 @@
 
 ## Article（記事）を更新するとき
 
-1. いつもどおり **Obsidian** などで、`Dropbox/_md`（デフォルトは `~/Library/CloudStorage/Dropbox/_md`）を編集する。
-2. リポジトリの**ルート**で次を実行し、上記フォルダの中身を `src/data/article/markdown/` にコピーする（`.obsidian` はコピーされない）。
+1. いつもどおり **Obsidian** などで、`~/Library/CloudStorage/Dropbox/_md` を編集する。
+2. リポジトリの**ルート**で次を実行する（コピー → `data` 内の画像・動画の正規化まで）。
 
    ```bash
-   ./scripts/sync-article-from-dropbox.sh
+   ./sync-obsidian.sh
    ```
-
-   別のコピー元にしたいときは `DROPBOX_ARTICLE_MD` を付ける。ルートの `./sync-article-from-obsidian.sh` でも同じスクリプトを呼べる。
 
 3. 変更を **Git に commit** する（必要なら `git push` で本番デプロイまで）。
 

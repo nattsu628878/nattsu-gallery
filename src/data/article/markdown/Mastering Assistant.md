@@ -1,4 +1,4 @@
-![[スクリーンショット 2026-01-06 9.40.56.png]]
+![[スクリーンショット 2026-01-06 9.40.56.webp]]
  # Dynamics
 [[LUFS]]
 Loudness Units Full Scale
