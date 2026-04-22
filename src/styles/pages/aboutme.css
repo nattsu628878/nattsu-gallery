@@ -147,3 +147,42 @@
     flex-wrap: wrap;
   }
 }
+
+@media (max-width: 768px) {
+  .mode-placeholder {
+    padding: 0.8rem;
+  }
+
+  .about-link-row {
+    align-items: flex-start;
+  }
+
+  .about-links a {
+    font-size: 0.8rem;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 480px) {
+  .mode-placeholder h2 {
+    font-size: 0.9rem;
+  }
+
+  .mode-placeholder p {
+    font-size: 0.82rem;
+  }
+
+  .about-avatar {
+    width: 34px;
+    height: 34px;
+  }
+
+  .project-card {
+    padding: 0.5rem 0.55rem;
+  }
+
+  .skill-icon {
+    width: 30px;
+    height: 30px;
+  }
+}

@@ -88,7 +88,13 @@ header {
 }
 
 @media (max-width: 768px) {
+  .container {
+    padding: 0.65rem;
+  }
+
   header {
+    margin: -0.65rem -0.65rem 0.75rem -0.65rem;
+    padding: 0.5rem 0.65rem;
     overflow-x: auto;
     overflow-y: hidden;
   }
@@ -96,5 +102,25 @@ header {
   .header-row {
     width: max-content;
     min-width: 100%;
+  }
+
+  .header-title {
+    font-size: 0.92rem;
+  }
+
+  .view-btn {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.68rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.5rem;
+  }
+
+  header {
+    margin: -0.5rem -0.5rem 0.65rem -0.5rem;
+    padding: 0.45rem 0.5rem;
   }
 }
