@@ -45,7 +45,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'dist'
+          # @astrojs/node 利用時、静的成果物は dist/client
+          path: 'dist/client'
 
       - name: Deploy to GitHub Pages
         id: deployment

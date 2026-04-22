@@ -4,6 +4,8 @@
   --accent: #628878;
   --accent-dark: #4d6b5f;
   --accent-bg: rgba(98, 136, 120, 0.15);
+  --header-btn-height: 28px;
+  --header-btn-padding-x: 0.6rem;
 }
 
 html {
@@ -66,7 +68,8 @@ header {
 }
 
 .view-btn {
-  padding: 0.25rem 0.6rem;
+  height: var(--header-btn-height);
+  padding: 0 var(--header-btn-padding-x);
   border: 1px solid #ddd;
   background: #fff;
   color: #666;
@@ -74,6 +77,11 @@ header {
   font-weight: 500;
   cursor: pointer;
   border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  line-height: 1;
 }
 
 .view-btn:hover {
@@ -109,7 +117,6 @@ header {
   }
 
   .view-btn {
-    padding: 0.3rem 0.5rem;
     font-size: 0.68rem;
   }
 }

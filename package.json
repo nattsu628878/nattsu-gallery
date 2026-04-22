@@ -4,7 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "bash scripts/normalize-article-assets.sh",
     "dev": "astro dev",
+    "dev:opus-editor": "npm --prefix tools/opus-editor run dev",
+    "dev:all": "npm run predev && npx concurrently -k -n astro,opus -c blue,magenta \"npm run dev -- --host 127.0.0.1\" \"npm --prefix tools/opus-editor run dev\"",
     "build": "astro build",
     "preview": "astro preview"
   },
@@ -13,5 +16,9 @@
     "astro": "^5.0.0",
     "marked": "^16.4.1",
     "svelte": "^5.0.0"
+  },
+  "devDependencies": {
+    "@astrojs/node": "^9.5.5",
+    "concurrently": "^9.1.2"
   }
 }

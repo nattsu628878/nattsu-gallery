@@ -1,0 +1,177 @@
+---
+import ArticleView from '../../../components/article/ArticleView.svelte';
+import '../../../styles/pages/article.css';
+import { marked } from 'marked';
+
+const base = import.meta.env.BASE_URL;
+const withBase = (path: string) => `${base}${path.replace(/^\/+/, '')}`;
+const MARKDOWN_ROOT = '/src/data/article/markdown/';
+
+const markdownModules = import.meta.glob('../../../data/article/markdown/**/*.md', {
+  query: '?raw',
+  import: 'default',
+  eager: true
+}) as Record<string, string>;
+const assetModules = import.meta.glob('../../../data/article/markdown/data/**/*', {
+  query: '?url',
+  import: 'default',
+  eager: true
+}) as Record<string, string>;
+
+const docs = Object.entries(markdownModules).map(([filePath, raw]) => {
+  const normalized = filePath.replace(/\\/g, '/');
+  const rel = normalized.includes(MARKDOWN_ROOT) ? normalized.split(MARKDOWN_ROOT)[1] : normalized.split('/').slice(-1)[0];
+  const slug = rel.replace(/\.md$/i, '');
+  const filename = rel.split('/').pop() || '';
+  const id = filename.replace(/\.md$/i, '').normalize('NFC');
+  return { id, slug, raw };
+});
+const docMap = new Map<string, (typeof docs)[number]>();
+docs.forEach((doc) => {
+  const bySlug = doc.slug.toLowerCase();
+  const byId = doc.id.toLowerCase();
+  if (!docMap.has(bySlug)) docMap.set(bySlug, doc);
+  if (!docMap.has(byId)) docMap.set(byId, doc);
+});
+
+const assetMap = new Map<string, string>();
+Object.entries(assetModules).forEach(([filePath, url]) => {
+  const normalized = filePath.replace(/\\/g, '/');
+  const rel = normalized.includes(MARKDOWN_ROOT) ? normalized.split(MARKDOWN_ROOT)[1] : normalized.split('/').slice(-1)[0];
+  const baseName = rel.split('/').pop() || rel;
+  assetMap.set(rel.toLowerCase(), String(url));
+  assetMap.set(baseName.toLowerCase(), String(url));
+});
+
+function normalizeTarget(target: string) {
+  return target
+    .trim()
+    .normalize('NFC')
+    .replace(/\.md$/i, '')
+    .replace(/\\/g, '/')
+    .replace(/^\/+/, '')
+    .toLowerCase();
+}
+
+function toArticleHref(target: string) {
+  return withBase(`article/_home/${encodeURIComponent(target)}`);
+}
+
+function isImageExt(value: string) {
+  return /\.(png|jpe?g|webp|gif|svg|avif)$/i.test(value);
+}
+
+function isVideoExt(value: string) {
+  return /\.(mp4|webm|ogg|mov)$/i.test(value);
+}
+
+function getVideoMime(value: string) {
+  const lower = value.toLowerCase();
+  if (lower.endsWith('.mp4')) return 'video/mp4';
+  if (lower.endsWith('.webm')) return 'video/webm';
+  if (lower.endsWith('.ogg')) return 'video/ogg';
+  if (lower.endsWith('.mov')) return 'video/quicktime';
+  return 'video/mp4';
+}
+
+function renderVideoEmbed(videoUrl: string, rawTarget: string, label: string) {
+  const mime = getVideoMime(rawTarget);
+  return `<video controls playsinline preload="metadata"><source src="${videoUrl}" type="${mime}" /><a href="${videoUrl}" target="_blank" rel="noopener noreferrer">${label}</a></video>`;
+}
+
+function resolveAssetUrl(target: string) {
+  const cleaned = target.trim().replace(/^\/+/, '').replace(/\\/g, '/');
+  const byExact = assetMap.get(cleaned.toLowerCase());
+  if (byExact) return byExact;
+  const file = cleaned.split('/').pop() || cleaned;
+  return assetMap.get(file.toLowerCase()) || '';
+}
+
+function buildHierarchyPath(rawTarget: string, resolvedId: string) {
+  const cleaned = rawTarget.trim().replace(/\.md$/i, '').replace(/\\/g, '/').replace(/^\/+/, '');
+  if (!cleaned) return `_home/${resolvedId}`;
+  return cleaned;
+}
+
+function convertObsidianLinks(markdown: string) {
+  return markdown
+    .replace(/!\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|([^\]]+))?\]\]/g, (_full, rawTarget, rawLabel = '') => {
+      const assetUrl = resolveAssetUrl(String(rawTarget));
+      if (!assetUrl) return _full;
+      const label = String(rawLabel || rawTarget).trim();
+      if (isImageExt(String(rawTarget))) return `![${label}](${assetUrl})`;
+      if (isVideoExt(String(rawTarget))) return renderVideoEmbed(assetUrl, String(rawTarget), label);
+      return `[${label}](${assetUrl})`;
+    })
+    .replace(/\[\[([^\]|#]+)(#[^\]|]+)?(?:\|([^\]]+))?\]\]/g, (_full, rawTarget, rawHash = '', rawLabel = '') => {
+      const key = normalizeTarget(String(rawTarget));
+      const matched = docMap.get(key);
+      if (!matched) return rawLabel || rawTarget;
+      const label = String(rawLabel || rawTarget).trim();
+      const hash = String(rawHash || '');
+      const hierarchyPath = buildHierarchyPath(String(rawTarget), matched.id);
+      return `[${label}](${toArticleHref(matched.id)}?path=${encodeURIComponent(hierarchyPath)}${hash})`;
+    })
+    .replace(/\[([^\]]+)\]\(([^)]+\.md)(#[^)]+)?\)/g, (_full, label, mdTarget, hash = '') => {
+      const key = normalizeTarget(String(mdTarget));
+      const matched = docMap.get(key);
+      if (!matched) return _full;
+      const hierarchyPath = buildHierarchyPath(String(mdTarget), matched.id);
+      return `[${label}](${toArticleHref(matched.id)}?path=${encodeURIComponent(hierarchyPath)}${String(hash || '')})`;
+    })
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_full, alt, rawTarget) => {
+      const assetUrl = resolveAssetUrl(String(rawTarget));
+      if (!assetUrl) return _full;
+      if (isVideoExt(String(rawTarget))) {
+        const label = String(alt || rawTarget).trim();
+        return renderVideoEmbed(assetUrl, String(rawTarget), label);
+      }
+      return `![${alt}](${assetUrl})`;
+    })
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_full, label, rawTarget) => {
+      const assetUrl = resolveAssetUrl(String(rawTarget));
+      if (!assetUrl) return _full;
+      return `[${label}](${assetUrl})`;
+    });
+}
+
+async function renderMarkdown(markdown: string) {
+  const rendered = await marked.parse(markdown, { breaks: true });
+  return String(rendered);
+}
+
+export function getStaticPaths() {
+  const modules = import.meta.glob('../../../data/article/markdown/**/*.md');
+  const ids = Object.keys(modules).map((filePath) => {
+    const normalized = filePath.replace(/\\/g, '/');
+    const filename = normalized.split('/').pop() || '';
+    return filename.replace(/\.md$/i, '').normalize('NFC');
+  });
+  return ids.map((id) => ({
+    params: { prefix: '_home', id }
+  }));
+}
+
+const articles = await Promise.all(
+  docs.map(async (doc) => ({
+    id: doc.id,
+    title: doc.id,
+    breadcrumb: `_home/${doc.id}`,
+    html: await renderMarkdown(convertObsidianLinks(doc.raw))
+  }))
+);
+
+const initialId = Astro.params.id || '';
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Article - natʇsu</title>
+  </head>
+  <body>
+    <ArticleView client:only="svelte" articles={articles} initialId={initialId} />
+  </body>
+</html>

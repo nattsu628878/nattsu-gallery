@@ -240,5 +240,23 @@
     "assets": {
       "image": "/opus/2026-04-08.webp"
     }
+  },
+  {
+    "id": "2026-04-23",
+    "title": "nagano",
+    "type": "picture",
+    "date": "2026-04-23",
+    "assets": {
+      "image": "/opus/2026-04-23.webp"
+    }
+  },
+  {
+    "id": "2026-04-23-2",
+    "title": "nagano",
+    "type": "picture",
+    "date": "2026-04-23",
+    "assets": {
+      "image": "/opus/2026-04-23-2.webp"
+    }
   }
 ]

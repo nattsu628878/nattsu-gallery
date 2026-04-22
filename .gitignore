@@ -1,5 +1,6 @@
-# 依存関係（Opus Editer は apps/opus-editer/ 内のみ）
+# 依存関係
 node_modules/
+tools/opus-editor/dist/
 
 # 環境・編集用
 .DS_Store

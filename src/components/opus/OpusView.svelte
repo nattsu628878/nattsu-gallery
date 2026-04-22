@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterUpdate, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
 
   type Item = {
@@ -19,7 +19,6 @@
 
   export let items: Item[] = [];
 
-  const ITEMS_PER_ROW = 5;
   const VIEWS = ['grid', 'table'] as const;
   type ViewType = (typeof VIEWS)[number];
   const base = import.meta.env.BASE_URL;
@@ -38,9 +37,7 @@
   let showPicture = true;
   let showHeaderOptions = false;
   let prefersReducedMotion = false;
-  let rowElements: Array<HTMLDivElement | null> = [];
-  let trackElements: Array<HTMLDivElement | null> = [];
-  let hasMounted = false;
+  let isMobile = false;
 
   if (typeof window !== 'undefined') {
     const params = new URLSearchParams(window.location.search);
@@ -49,10 +46,15 @@
   }
 
   onMount(() => {
+    const updateMobileState = () => {
+      isMobile = window.innerWidth <= 768;
+    };
     prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    updateMobileState();
     showHeaderOptions = true;
-    fitGridRowsToViewport();
-    const onResize = () => fitGridRowsToViewport();
+    const onResize = () => {
+      updateMobileState();
+    };
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
       if (event.altKey || event.ctrlKey || event.metaKey) return;
@@ -68,15 +70,10 @@
 
     window.addEventListener('resize', onResize);
     window.addEventListener('keydown', onKeyDown);
-    hasMounted = true;
     return () => {
       window.removeEventListener('resize', onResize);
       window.removeEventListener('keydown', onKeyDown);
     };
-  });
-
-  afterUpdate(() => {
-    fitGridRowsToViewport();
   });
 
   $: filteredByType = items.filter((item) => {
@@ -89,21 +86,21 @@
     new Set(filteredByType.flatMap((item) => (Array.isArray(item.tags) ? item.tags : [])))
   ).sort((a, b) => a.localeCompare(b));
 
-  $: tableItems = [...filteredByType]
-    .filter((item) => {
-      if (selectedTags.length === 0) return true;
-      const itemTags = item.tags ?? [];
-      return selectedTags.some((tag) => itemTags.includes(tag));
-    })
-    .sort((a, b) => {
-      const da = a.date ?? '';
-      const db = b.date ?? '';
-      const cmp = da.localeCompare(db);
-      return sortOrder === 'desc' ? -cmp : cmp;
-    });
+  $: filteredByTag = [...filteredByType].filter((item) => {
+    if (selectedTags.length === 0) return true;
+    const itemTags = item.tags ?? [];
+    return selectedTags.some((tag) => itemTags.includes(tag));
+  });
 
-  $: shuffled = shuffle(filteredByType);
-  $: gridRows = chunk(shuffled, ITEMS_PER_ROW);
+  $: sortedItems = [...filteredByTag].sort((a, b) => {
+    const da = a.date ?? '';
+    const db = b.date ?? '';
+    const cmp = da.localeCompare(db);
+    return sortOrder === 'desc' ? -cmp : cmp;
+  });
+
+  $: tableItems = [...sortedItems];
+  $: gridItems = shuffle(filteredByType);
 
   function shuffle<T>(arr: T[]) {
     const a = [...arr];
@@ -112,12 +109,6 @@
       [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
-  }
-
-  function chunk<T>(arr: T[], size: number) {
-    const rows: T[][] = [];
-    for (let i = 0; i < arr.length; i += size) rows.push(arr.slice(i, i + size));
-    return rows;
   }
 
   function setView(view: ViewType) {
@@ -207,21 +198,6 @@
     selectedTags = [...selectedTags, tag];
   }
 
-  function fitGridRowsToViewport() {
-    if (currentView !== 'grid') return;
-    const sidePadding = 8;
-    for (let i = 0; i < rowElements.length; i += 1) {
-      const row = rowElements[i];
-      const track = trackElements[i];
-      if (!row || !track) continue;
-      const rowWidth = row.clientWidth;
-      const trackWidth = track.scrollWidth;
-      if (!rowWidth || !trackWidth) continue;
-      const safeWidth = Math.max(0, rowWidth - sidePadding);
-      const scale = Math.min(1, safeWidth / trackWidth);
-      row.style.setProperty('--row-fit-scale', scale.toString());
-    }
-  }
 </script>
 
 <div class="container">
@@ -289,6 +265,7 @@
               </div>
             {/if}
             <div class="view-toggle">
+              <span class="type-filter-label view-toggle-label">View</span>
               <button class={`view-btn ${currentView === 'grid' ? 'active' : ''}`} on:click={() => setView('grid')}>Grid</button>
               <button class={`view-btn ${currentView === 'table' ? 'active' : ''}`} on:click={() => setView('table')}>Table</button>
             </div>
@@ -302,31 +279,25 @@
     {#if currentView === 'grid'}
       <section class="mode-section">
         <div class="gallery">
-          {#if gridRows.length === 0}
-            <p class="empty-msg">No data</p>
-          {:else}
-            {#each gridRows as row, rowIndex}
-              <div class="grid-row" bind:this={rowElements[rowIndex]}>
-                <div class="grid-row-track" bind:this={trackElements[rowIndex]}>
-                  {#each row as item}
-                    <div
-                      class="media-card"
-                      data-id={item.id}
-                      role="button"
-                      tabindex="0"
-                      on:click={() => executeAction(item)}
-                      on:keydown={(event) => onActivateCard(event, item)}
-                    >
-                      <div class="thumbnail">
-                        <img src={getThumbnailUrl(item)} alt={item.title || item.id} loading="lazy" on:error={(e) => onImageError(e, item)} />
-                      </div>
-                      <div class="grid-card-title">{item.title || item.id}</div>
-                    </div>
-                  {/each}
-                </div>
+        {#if gridItems.length === 0}
+          <p class="empty-msg">No data</p>
+        {:else}
+          {#each gridItems as item (item.id)}
+            <div
+              class="media-card"
+              data-id={item.id}
+              role="button"
+              tabindex="0"
+              on:click={() => executeAction(item)}
+              on:keydown={(event) => onActivateCard(event, item)}
+            >
+              <div class="thumbnail">
+                <img src={getThumbnailUrl(item)} alt={item.title || item.id} loading="lazy" on:error={(e) => onImageError(e, item)} />
               </div>
-            {/each}
-          {/if}
+              <div class="grid-card-title">{item.title || item.id}</div>
+            </div>
+          {/each}
+        {/if}
         </div>
       </section>
     {:else if currentView === 'table'}

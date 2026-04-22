@@ -3,15 +3,7 @@
   const base = import.meta.env.BASE_URL;
   const withBase = (path: string) => `${base}${path.replace(/^\/+/, '')}`;
 
-  type Article = {
-    id: string;
-    title?: string;
-    date?: string;
-  };
-
-  export let articles: Article[] = [];
-
-  const sorted = [...articles].sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''));
+  export let homeHtml = '';
   const modeRoutes = ['opus/?view=grid', 'aboutme/', 'article/'] as const;
 
   const goTo = (href: string) => {
@@ -50,21 +42,16 @@
   </header>
   <main>
     <section class="article-home">
-      <h2 class="article-home-title">Article</h2>
-      <ul class="article-list">
-        {#if sorted.length === 0}
-          <li class="article-list-empty">No data</li>
-        {:else}
-          {#each sorted as article}
-            <li class="article-list-item">
-              <a class="article-list-link" href={withBase(`article/view?id=${encodeURIComponent(article.id)}`)}>
-                {article.title || article.id}
-              </a>
-              <span class="article-list-meta">{article.date?.trim() || '—'}</span>
-            </li>
-          {/each}
-        {/if}
-      </ul>
+      {#if !homeHtml}
+        <p class="article-list-empty">`_home.md` が見つかりません。</p>
+      {:else}
+        <article class="article-view">
+          <p class="article-opened-file-name">_home.md</p>
+          <div class="article-prose">
+            {@html homeHtml}
+          </div>
+        </article>
+      {/if}
     </section>
   </main>
 </div>

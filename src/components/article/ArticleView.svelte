@@ -1,32 +1,44 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { marked } from 'marked';
   const base = import.meta.env.BASE_URL;
   const withBase = (path: string) => `${base}${path.replace(/^\/+/, '')}`;
 
   type Article = {
     id: string;
     title?: string;
-    file?: string;
+    html?: string;
+    breadcrumb?: string;
   };
 
   export let articles: Article[] = [];
-  export let markdownByFile: Record<string, string> = {};
+  export let initialId = '';
   const modeRoutes = ['opus/?view=grid', 'aboutme/', 'article/'] as const;
 
-  const params = new URLSearchParams(window.location.search);
-  const id = (params.get('id') || '').trim();
+  const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+  const id = (initialId || params.get('id') || '').trim();
+  const hierarchyPath = (params.get('path') || '').trim();
   const meta = articles.find((a) => a.id === id);
-  const title = meta?.title || meta?.id || 'Article';
-  const markdown = meta?.file ? markdownByFile[meta.file] ?? '' : '';
-  const html = markdown ? marked.parse(markdown) : '';
+  const html = meta?.html || '';
+  const openedFileName = (() => {
+    if (!id) return '_home.md';
+    if (hierarchyPath) return `${hierarchyPath}.md`;
+    return `_home/${id}.md`;
+  })();
 
-  if (meta) {
-    document.title = `${title} - natʇsu`;
+  if (typeof document !== 'undefined') {
+    document.title = 'Article - natʇsu';
   }
 
   const goTo = (href: string) => {
     window.location.href = withBase(href);
+  };
+
+  const goBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    goTo('article/');
   };
 
   onMount(() => {
@@ -60,10 +72,11 @@
     </div>
   </header>
   <main>
-    <nav class="article-breadcrumb">
-      <a href={withBase('article/')}>Article</a><span class="article-breadcrumb-sep">/</span><span>{title}</span>
-    </nav>
+    <div class="article-back-row">
+      <button type="button" class="view-btn" on:click={goBack} aria-label="戻る">←</button>
+    </div>
     <article class="article-view">
+      <p class="article-opened-file-name">{openedFileName}</p>
       {#if !id}
         <p class="article-view-error">id がありません。</p>
       {:else if !meta}

@@ -1,0 +1,108 @@
+/* nattsu-gallery 本体（common）に揃えたトークン */
+:root {
+  --accent: #628878;
+  --accent-dark: #4d6b5f;
+  --accent-bg: rgba(98, 136, 120, 0.12);
+  --header-btn-height: 28px;
+  --header-btn-padding-x: 0.6rem;
+  --oe-border: #e0e0e0;
+  --oe-input-bg: #fff;
+  --oe-muted: #666;
+  --oe-radius: 6px;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f5f5f5;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+a.oe-link {
+  color: var(--accent-dark);
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+a.oe-link:hover {
+  text-decoration: underline;
+}
+
+/* 本体 header の雰囲気に合わせる */
+.oe-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.oe-header {
+  background: #fff;
+  padding: 0.4rem 1rem;
+  border-bottom: 2px solid var(--accent);
+  flex-shrink: 0;
+}
+
+.oe-header-row {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.oe-header-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0;
+}
+
+.oe-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  width: 100%;
+  flex: 1;
+  min-width: 0;
+}
+
+.view-btn {
+  height: var(--header-btn-height);
+  padding: 0 var(--header-btn-padding-x);
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #666;
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.view-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 768px) {
+  .oe-container {
+    padding: 0.65rem;
+  }
+}
