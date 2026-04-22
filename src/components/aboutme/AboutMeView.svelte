@@ -1,5 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  const base = import.meta.env.BASE_URL;
+  const withBase = (path: string) => `${base}${path.replace(/^\/+/, '')}`;
 
   const skills = [
     { src: 'https://skillicons.dev/icons?i=rust', alt: 'Rust' },
@@ -14,12 +16,12 @@
     { src: 'https://skillicons.dev/icons?i=godot', alt: 'Godot' },
     { src: 'https://skillicons.dev/icons?i=unity', alt: 'Unity' },
     { src: 'https://skillicons.dev/icons?i=blender', alt: 'Blender' },
-    { src: '/aboutme/logic-pro.webp', alt: 'Logic Pro' },
-    { src: '/aboutme/ableton-live.webp', alt: 'Ableton Live' },
-    { src: '/aboutme/renoise.webp', alt: 'Renoise' },
-    { src: '/aboutme/final-cut-pro.webp', alt: 'Final Cut Pro' },
-    { src: '/aboutme/motion.webp', alt: 'Motion' },
-    { src: '/aboutme/touch-designer.webp', alt: 'TouchDesigner' },
+    { src: withBase('aboutme/logic-pro.webp'), alt: 'Logic Pro' },
+    { src: withBase('aboutme/ableton-live.webp'), alt: 'Ableton Live' },
+    { src: withBase('aboutme/renoise.webp'), alt: 'Renoise' },
+    { src: withBase('aboutme/final-cut-pro.webp'), alt: 'Final Cut Pro' },
+    { src: withBase('aboutme/motion.webp'), alt: 'Motion' },
+    { src: withBase('aboutme/touch-designer.webp'), alt: 'TouchDesigner' },
     { src: 'https://skillicons.dev/icons?i=apple', alt: 'macOS' },
     { src: 'https://skillicons.dev/icons?i=debian', alt: 'Debian-based' },
     { src: 'https://skillicons.dev/icons?i=arch', alt: 'Arch-based' },
@@ -28,10 +30,10 @@
   ];
 
   const skillsLoop = [...skills, ...skills];
-  const modeRoutes = ['/opus/?view=grid', '/aboutme/', '/article/'] as const;
+  const modeRoutes = ['opus/?view=grid', 'aboutme/', 'article/'] as const;
 
   const goTo = (href: string) => {
-    window.location.href = href;
+    window.location.href = withBase(href);
   };
 
   onMount(() => {
@@ -58,9 +60,9 @@
     <div class="header-row header-row-top">
       <h1 class="header-title">natʇsu</h1>
       <div class="mode-toggle" id="modeToggle">
-        <button class="view-btn" on:click={() => goTo('/opus/?view=grid')}>Opus</button>
-        <button class="view-btn active" on:click={() => goTo('/aboutme/')}>About Me</button>
-        <button class="view-btn" on:click={() => goTo('/article/')}>Article</button>
+        <button class="view-btn" on:click={() => goTo('opus/?view=grid')}>Opus</button>
+        <button class="view-btn active" on:click={() => goTo('aboutme/')}>About Me</button>
+        <button class="view-btn" on:click={() => goTo('article/')}>Article</button>
       </div>
     </div>
   </header>
@@ -74,15 +76,15 @@
       </div>
       <div class="about-links">
         <div class="about-link-row">
-          <img class="about-avatar" src="/aboutme/nattsu_real.webp" width="40" height="40" alt="プロフィール写真" />
+          <img class="about-avatar" src={withBase('aboutme/nattsu_real.webp')} width="40" height="40" alt="プロフィール写真" />
           <a href="https://github.com/nattsu628878" target="_blank" rel="noopener noreferrer">GitHub: @nattsu628878</a>
         </div>
         <div class="about-link-row">
-          <img class="about-avatar" src="/aboutme/nattsu_320_320_tt.webp" width="40" height="40" alt="X 用アイコン" />
+          <img class="about-avatar" src={withBase('aboutme/nattsu_320_320_tt.webp')} width="40" height="40" alt="X 用アイコン" />
           <a href="https://x.com/nattsu_628878" target="_blank" rel="noopener noreferrer">X: @nattsu_628878</a>
         </div>
         <div class="about-link-row">
-          <img class="about-avatar" src="/aboutme/nattsu_320_320_tt.webp" width="40" height="40" alt="YouTube 用アイコン" />
+          <img class="about-avatar" src={withBase('aboutme/nattsu_320_320_tt.webp')} width="40" height="40" alt="YouTube 用アイコン" />
           <a href="https://www.youtube.com/@nattsu6__8878" target="_blank" rel="noopener noreferrer">YouTube: @nattsu6__8878</a>
         </div>
       </div>

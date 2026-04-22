@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { marked } from 'marked';
+  const base = import.meta.env.BASE_URL;
+  const withBase = (path: string) => `${base}${path.replace(/^\/+/, '')}`;
 
   type Article = {
     id: string;
@@ -10,7 +12,7 @@
 
   export let articles: Article[] = [];
   export let markdownByFile: Record<string, string> = {};
-  const modeRoutes = ['/opus/?view=grid', '/aboutme/', '/article/'] as const;
+  const modeRoutes = ['opus/?view=grid', 'aboutme/', 'article/'] as const;
 
   const params = new URLSearchParams(window.location.search);
   const id = (params.get('id') || '').trim();
@@ -24,7 +26,7 @@
   }
 
   const goTo = (href: string) => {
-    window.location.href = href;
+    window.location.href = withBase(href);
   };
 
   onMount(() => {
@@ -51,15 +53,15 @@
     <div class="header-row header-row-top">
       <h1 class="header-title">natʇsu</h1>
       <div class="mode-toggle" id="modeToggle">
-        <button class="view-btn" on:click={() => goTo('/opus/?view=grid')}>Opus</button>
-        <button class="view-btn" on:click={() => goTo('/aboutme/')}>About Me</button>
-        <button class="view-btn active" on:click={() => goTo('/article/')}>Article</button>
+        <button class="view-btn" on:click={() => goTo('opus/?view=grid')}>Opus</button>
+        <button class="view-btn" on:click={() => goTo('aboutme/')}>About Me</button>
+        <button class="view-btn active" on:click={() => goTo('article/')}>Article</button>
       </div>
     </div>
   </header>
   <main>
     <nav class="article-breadcrumb">
-      <a href="/article/">Article</a><span class="article-breadcrumb-sep">/</span><span>{title}</span>
+      <a href={withBase('article/')}>Article</a><span class="article-breadcrumb-sep">/</span><span>{title}</span>
     </nav>
     <article class="article-view">
       {#if !id}

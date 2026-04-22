@@ -22,7 +22,14 @@
   const ITEMS_PER_ROW = 5;
   const VIEWS = ['grid', 'table'] as const;
   type ViewType = (typeof VIEWS)[number];
-  const modeRoutes = ['/opus/?view=grid', '/aboutme/', '/article/'] as const;
+  const base = import.meta.env.BASE_URL;
+  const withBase = (path: string) => `${base}${path.replace(/^\/+/, '')}`;
+  const resolveSitePath = (path?: string) => {
+    if (!path) return '';
+    if (/^https?:\/\//.test(path) || path.startsWith('data:')) return path;
+    return withBase(path);
+  };
+  const modeRoutes = ['opus/?view=grid', 'aboutme/', 'article/'] as const;
 
   let currentView: ViewType = 'grid';
   let sortOrder: 'asc' | 'desc' = 'asc';
@@ -138,8 +145,8 @@
   }
 
   function getThumbnailUrl(item: Item) {
-    if (item.assets?.image) return item.assets.image;
-    if (item.thumbnail) return item.thumbnail;
+    if (item.assets?.image) return resolveSitePath(item.assets.image);
+    if (item.thumbnail) return resolveSitePath(item.thumbnail);
     if (item.url && (item.url.includes('youtube.com') || item.url.includes('youtu.be'))) {
       const videoId = extractVideoId(item.url);
       if (videoId) return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
@@ -164,7 +171,7 @@
 
   function executeAction(item: Item) {
     if (item.type === 'picture') {
-      const imgUrl = item.assets?.image || item.thumbnail;
+      const imgUrl = resolveSitePath(item.assets?.image || item.thumbnail);
       if (imgUrl) {
         window.open(imgUrl, '_blank');
         return;
@@ -189,7 +196,7 @@
   }
 
   const goTo = (href: string) => {
-    window.location.href = href;
+    window.location.href = withBase(href);
   };
 
   function toggleTag(tag: string) {
@@ -222,9 +229,9 @@
     <div class="header-row header-row-top">
       <h1 class="header-title">natʇsu</h1>
       <div class="mode-toggle">
-        <button class="view-btn active" on:click={() => goTo('/opus/?view=grid')}>Opus</button>
-        <button class="view-btn" on:click={() => goTo('/aboutme/')}>About Me</button>
-        <button class="view-btn" on:click={() => goTo('/article/')}>Article</button>
+        <button class="view-btn active" on:click={() => goTo('opus/?view=grid')}>Opus</button>
+        <button class="view-btn" on:click={() => goTo('aboutme/')}>About Me</button>
+        <button class="view-btn" on:click={() => goTo('article/')}>Article</button>
       </div>
     </div>
     <div class="header-row-bottom-wrap" class:is-open={showHeaderOptions}>
