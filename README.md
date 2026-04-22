@@ -51,6 +51,19 @@
 - Article 画像/動画: `src/data/article/markdown/data/*`
 （Obsidianから_mdを全コピペでOK）
 
+## Article（記事）を更新するとき
+
+1. いつもどおり **Obsidian** などで、`Dropbox/_md`（デフォルトは `~/Library/CloudStorage/Dropbox/_md`）を編集する。
+2. リポジトリの**ルート**で次を実行し、上記フォルダの中身を `src/data/article/markdown/` にコピーする（`.obsidian` はコピーされない）。
+
+   ```bash
+   ./scripts/sync-article-from-dropbox.sh
+   ```
+
+   別のコピー元にしたいときは `DROPBOX_ARTICLE_MD` を付ける。ルートの `./sync-article-from-obsidian.sh` でも同じスクリプトを呼べる。
+
+3. 変更を **Git に commit** する（必要なら `git push` で本番デプロイまで）。
+
 ## メモ
 
 - 開発中に「動画がモバイルで再生できない」場合は、まず拡張子を確認する（`webm` かどうか）

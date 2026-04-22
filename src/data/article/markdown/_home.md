@@ -1,20 +1,20 @@
-開発
+### 開発
 [[web-synth]]
-開発環境
+### 開発環境
 [[github-repo-list]]
 [[開発環境2025]]
 [[dotfilesを作りたい]]
-環境構築
+### 環境構築
 [[cursor_env]]
 [[Rust_env]]
 [[Tauri_env]]
 [[Bevy(Rust)_env]]
-言語
+### 言語
 [[Rust]]
-フレームワーク
-Tips
+### フレームワーク
+### Tips
 [[short-cut-key]]
-設定備忘録
+### 設定備忘録
 [[ZorinOS]]
 [[SteamOS]]
 [[PCの威力を初心者に教える]]

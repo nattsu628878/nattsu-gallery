@@ -1,4 +1,4 @@
-![[スクリーンショット 2026-02-10 1.26.50.webp]]
+![[スクリーンショット 2026-02-10 1.26.50.png]]
 https://support.apple.com/ja-jp/guide/logicpro/lgcead9636ef/12.0/mac/15.6
 
 
