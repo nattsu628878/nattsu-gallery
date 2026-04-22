@@ -1,0 +1,19 @@
+---
+import OpusView from '../../components/opus/OpusView.svelte';
+import items from '../../data/opus/items.json';
+import '../../styles/pages/opus.css';
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/site-static/nattsu_320_320_tt.ico" type="image/x-icon" sizes="any" />
+    <link rel="apple-touch-icon" href="/site-static/nattsu_320_320_tt.webp" />
+    <title>natʇsu</title>
+  </head>
+  <body>
+    <OpusView client:only="svelte" items={items} />
+  </body>
+</html>

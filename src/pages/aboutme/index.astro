@@ -1,0 +1,18 @@
+---
+import AboutMeView from '../../components/aboutme/AboutMeView.svelte';
+import '../../styles/pages/aboutme.css';
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/site-static/nattsu_320_320_tt.ico" type="image/x-icon" sizes="any" />
+    <link rel="apple-touch-icon" href="/site-static/nattsu_320_320_tt.webp" />
+    <title>About Me - natʇsu</title>
+  </head>
+  <body>
+    <AboutMeView client:only="svelte" />
+  </body>
+</html>

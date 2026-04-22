@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT="/Users/nattsu/dev/project/nattsu-gallery"
-ASSETS_DIR="$ROOT/pages/opus/assets"
-ITEMS_JSON="$ROOT/pages/opus/data/items.json"
+ASSETS_DIR="$ROOT/public/pages/opus/assets"
+ITEMS_JSON="$ROOT/src/data/opus/items.json"
 
 if ! command -v cwebp >/dev/null 2>&1; then
   echo "cwebp is required but not found" >&2
@@ -37,7 +37,7 @@ python3 - <<'PY'
 import json
 from pathlib import Path
 
-items_path = Path('/Users/nattsu/dev/project/nattsu-gallery/pages/opus/data/items.json')
+items_path = Path('/Users/nattsu/dev/project/nattsu-gallery/src/data/opus/items.json')
 items = json.loads(items_path.read_text(encoding='utf-8'))
 
 for item in items:

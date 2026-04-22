@@ -1,0 +1,26 @@
+---
+import ArticleView from '../../components/article/ArticleView.svelte';
+import articles from '../../data/article/articles.json';
+import sampleMd from '../../data/article/markdown/sample.md?raw';
+import md20260329 from '../../data/article/markdown/2026-03-29.md?raw';
+import '../../styles/pages/article.css';
+
+const markdownByFile: Record<string, string> = {
+  'sample.md': sampleMd,
+  '2026-03-29.md': md20260329
+};
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/site-static/nattsu_320_320_tt.ico" type="image/x-icon" sizes="any" />
+    <link rel="apple-touch-icon" href="/site-static/nattsu_320_320_tt.webp" />
+    <title>Article - natʇsu</title>
+  </head>
+  <body>
+    <ArticleView client:only="svelte" articles={articles} markdownByFile={markdownByFile} />
+  </body>
+</html>
