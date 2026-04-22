@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="/Users/nattsu/dev/project/nattsu-gallery"
-ASSETS_DIR="$ROOT/public/pages/opus/assets"
+ASSETS_DIR="$ROOT/public/opus"
 ITEMS_JSON="$ROOT/src/data/opus/items.json"
 
 if ! command -v cwebp >/dev/null 2>&1; then

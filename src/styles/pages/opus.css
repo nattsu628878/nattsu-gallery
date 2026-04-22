@@ -4,6 +4,18 @@
   justify-content: flex-start;
 }
 
+.header-row-bottom-wrap {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.46s ease, opacity 0.34s ease;
+}
+
+.header-row-bottom-wrap.is-open {
+  max-height: 90px;
+  opacity: 1;
+}
+
 .header-controls {
   display: flex;
   align-items: center;
@@ -99,28 +111,20 @@
 .grid-row {
   width: 100%;
   min-width: 0;
-  overflow-x: auto;
-  overflow-y: visible;
-  animation: grid-row-fade-in 0.45s ease-out backwards;
-}
-
-.grid-row:nth-child(1) { animation-delay: 0s; }
-.grid-row:nth-child(2) { animation-delay: 0.08s; }
-.grid-row:nth-child(3) { animation-delay: 0.16s; }
-.grid-row:nth-child(4) { animation-delay: 0.24s; }
-.grid-row:nth-child(5) { animation-delay: 0.32s; }
-.grid-row:nth-child(n + 6) { animation-delay: 0.4s; }
-
-@keyframes grid-row-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  padding-inline: 4px;
 }
 
 .grid-row-track {
   display: flex;
   flex-wrap: nowrap;
   gap: 0.5rem;
-  width: fit-content;
+  width: max-content;
+  margin: 0 auto;
+  transform: scale(var(--row-fit-scale, 1));
+  transform-origin: center top;
 }
 
 .media-card {
@@ -184,7 +188,6 @@
 
 .table-view {
   background: #fff;
-  border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
@@ -192,6 +195,7 @@
 .table-view table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .table-view thead {
@@ -216,6 +220,26 @@
   color: #333;
 }
 
+.table-view th:nth-child(1),
+.table-view td:nth-child(1) {
+  width: 112px;
+}
+
+.table-view th:nth-child(3),
+.table-view td:nth-child(3) {
+  width: 92px;
+}
+
+.table-view th:nth-child(4),
+.table-view td:nth-child(4) {
+  width: 130px;
+}
+
+.table-view th:nth-child(2),
+.table-view td:nth-child(2) {
+  width: 30%;
+}
+
 .table-view tbody tr:hover {
   background: var(--accent-bg);
 }
@@ -234,6 +258,12 @@
 .table-date {
   color: #999;
   font-size: 0.85rem;
+}
+
+.table-type {
+  text-transform: lowercase;
+  color: #666;
+  font-size: 0.82rem;
 }
 
 .table-tags {
@@ -290,8 +320,3 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .grid-row {
-    animation: none;
-  }
-}

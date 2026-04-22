@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { afterUpdate, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
 
   type Item = {
@@ -20,28 +20,56 @@
   export let items: Item[] = [];
 
   const ITEMS_PER_ROW = 5;
-  const VIEWS = ['grid', 'table', 'simple'] as const;
+  const VIEWS = ['grid', 'table'] as const;
   type ViewType = (typeof VIEWS)[number];
+  const modeRoutes = ['/opus/?view=grid', '/aboutme/', '/article/'] as const;
 
   let currentView: ViewType = 'grid';
   let sortOrder: 'asc' | 'desc' = 'asc';
-  let filterTag = '';
+  let selectedTags: string[] = [];
   let showMovie = true;
   let showPicture = true;
   let showHeaderOptions = false;
   let prefersReducedMotion = false;
+  let rowElements: Array<HTMLDivElement | null> = [];
+  let trackElements: Array<HTMLDivElement | null> = [];
+  let hasMounted = false;
 
   if (typeof window !== 'undefined') {
     const params = new URLSearchParams(window.location.search);
     const q = params.get('view');
-    const stored = window.localStorage.getItem('currentView');
     if (q && VIEWS.includes(q as ViewType)) currentView = q as ViewType;
-    else if (stored && VIEWS.includes(stored as ViewType)) currentView = stored as ViewType;
   }
 
   onMount(() => {
     prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     showHeaderOptions = true;
+    fitGridRowsToViewport();
+    const onResize = () => fitGridRowsToViewport();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+
+      event.preventDefault();
+      const currentIndex = 0;
+      const delta = event.key === 'ArrowRight' ? 1 : -1;
+      const nextIndex = (currentIndex + delta + modeRoutes.length) % modeRoutes.length;
+      goTo(modeRoutes[nextIndex]);
+    };
+
+    window.addEventListener('resize', onResize);
+    window.addEventListener('keydown', onKeyDown);
+    hasMounted = true;
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  });
+
+  afterUpdate(() => {
+    fitGridRowsToViewport();
   });
 
   $: filteredByType = items.filter((item) => {
@@ -55,7 +83,11 @@
   ).sort((a, b) => a.localeCompare(b));
 
   $: tableItems = [...filteredByType]
-    .filter((item) => !filterTag || (item.tags ?? []).includes(filterTag))
+    .filter((item) => {
+      if (selectedTags.length === 0) return true;
+      const itemTags = item.tags ?? [];
+      return selectedTags.some((tag) => itemTags.includes(tag));
+    })
     .sort((a, b) => {
       const da = a.date ?? '';
       const db = b.date ?? '';
@@ -149,9 +181,40 @@
     if (item.url) window.open(item.url, '_blank');
   }
 
+  function onActivateCard(event: KeyboardEvent, item: Item) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      executeAction(item);
+    }
+  }
+
   const goTo = (href: string) => {
     window.location.href = href;
   };
+
+  function toggleTag(tag: string) {
+    if (selectedTags.includes(tag)) {
+      selectedTags = selectedTags.filter((t) => t !== tag);
+      return;
+    }
+    selectedTags = [...selectedTags, tag];
+  }
+
+  function fitGridRowsToViewport() {
+    if (currentView !== 'grid') return;
+    const sidePadding = 8;
+    for (let i = 0; i < rowElements.length; i += 1) {
+      const row = rowElements[i];
+      const track = trackElements[i];
+      if (!row || !track) continue;
+      const rowWidth = row.clientWidth;
+      const trackWidth = track.scrollWidth;
+      if (!rowWidth || !trackWidth) continue;
+      const safeWidth = Math.max(0, rowWidth - sidePadding);
+      const scale = Math.min(1, safeWidth / trackWidth);
+      row.style.setProperty('--row-fit-scale', scale.toString());
+    }
+  }
 </script>
 
 <div class="container">
@@ -164,57 +227,68 @@
         <button class="view-btn" on:click={() => goTo('/article/')}>Article</button>
       </div>
     </div>
-    {#if showHeaderOptions}
-      <div
-        class="header-row header-row-bottom"
-        in:fly={{ x: 20, duration: prefersReducedMotion ? 0 : 460, opacity: 0 }}
-      >
-        <div class="header-controls">
-          {#if currentView === 'grid'}
-            <div class="setting-item type-filter-group">
-              <span class="type-filter-label">Type</span>
-              <button
-                type="button"
-                class={`filter-toggle ${showMovie ? 'filter-toggle--on' : 'filter-toggle--off'}`}
-                on:click={() => (showMovie = !showMovie)}
-                aria-pressed={showMovie}
-              >Video</button>
-              <button
-                type="button"
-                class={`filter-toggle ${showPicture ? 'filter-toggle--on' : 'filter-toggle--off'}`}
-                on:click={() => (showPicture = !showPicture)}
-                aria-pressed={showPicture}
-              >Image</button>
-            </div>
-          {/if}
-          {#if currentView === 'table'}
-            <div class="header-view-controls">
-              <div class="setting-item">
-                <label for="sortOrderTable">Sort</label>
-                <select id="sortOrderTable" bind:value={sortOrder}>
-                  <option value="asc">Date</option>
-                  <option value="desc">Date (rev)</option>
-                </select>
+    <div class="header-row-bottom-wrap" class:is-open={showHeaderOptions}>
+      {#if showHeaderOptions}
+        <div
+          class="header-row header-row-bottom"
+          in:fly={{ x: 20, duration: prefersReducedMotion ? 0 : 460, opacity: 0 }}
+        >
+          <div class="header-controls">
+            {#if currentView === 'grid' || currentView === 'table'}
+              <div class="setting-item type-filter-group">
+                <span class="type-filter-label">Type</span>
+                <button
+                  type="button"
+                  class={`filter-toggle ${showMovie ? 'filter-toggle--on' : 'filter-toggle--off'}`}
+                  on:click={() => (showMovie = !showMovie)}
+                  aria-pressed={showMovie}
+                >video</button>
+                <button
+                  type="button"
+                  class={`filter-toggle ${showPicture ? 'filter-toggle--on' : 'filter-toggle--off'}`}
+                  on:click={() => (showPicture = !showPicture)}
+                  aria-pressed={showPicture}
+                >picture</button>
               </div>
-              <div class="setting-item">
-                <label for="filterTagTable">Tag</label>
-                <select id="filterTagTable" bind:value={filterTag}>
-                  <option value="">All</option>
+            {/if}
+            {#if currentView === 'table'}
+              <div class="header-view-controls">
+                <div class="setting-item type-filter-group">
+                  <span class="type-filter-label">Sort</span>
+                  <button
+                    type="button"
+                    class={`filter-toggle ${sortOrder === 'asc' ? 'filter-toggle--on' : 'filter-toggle--off'}`}
+                    on:click={() => (sortOrder = 'asc')}
+                    aria-pressed={sortOrder === 'asc'}
+                  >Date</button>
+                  <button
+                    type="button"
+                    class={`filter-toggle ${sortOrder === 'desc' ? 'filter-toggle--on' : 'filter-toggle--off'}`}
+                    on:click={() => (sortOrder = 'desc')}
+                    aria-pressed={sortOrder === 'desc'}
+                  >Date (rev)</button>
+                </div>
+                <div class="setting-item type-filter-group">
+                  <span class="type-filter-label">Tag</span>
                   {#each allTags as tag}
-                    <option value={tag}>{tag}</option>
+                    <button
+                      type="button"
+                      class={`filter-toggle ${selectedTags.includes(tag) ? 'filter-toggle--on' : 'filter-toggle--off'}`}
+                      on:click={() => toggleTag(tag)}
+                      aria-pressed={selectedTags.includes(tag)}
+                    >{tag}</button>
                   {/each}
-                </select>
+                </div>
               </div>
+            {/if}
+            <div class="view-toggle">
+              <button class={`view-btn ${currentView === 'grid' ? 'active' : ''}`} on:click={() => setView('grid')}>Grid</button>
+              <button class={`view-btn ${currentView === 'table' ? 'active' : ''}`} on:click={() => setView('table')}>Table</button>
             </div>
-          {/if}
-          <div class="view-toggle">
-            <button class={`view-btn ${currentView === 'grid' ? 'active' : ''}`} on:click={() => setView('grid')}>Grid</button>
-            <button class={`view-btn ${currentView === 'table' ? 'active' : ''}`} on:click={() => setView('table')}>Table</button>
-            <button class={`view-btn ${currentView === 'simple' ? 'active' : ''}`} on:click={() => setView('simple')}>Simple</button>
           </div>
         </div>
-      </div>
-    {/if}
+      {/if}
+    </div>
   </header>
 
   <main>
@@ -224,11 +298,18 @@
           {#if gridRows.length === 0}
             <p class="empty-msg">No data</p>
           {:else}
-            {#each gridRows as row}
-              <div class="grid-row">
-                <div class="grid-row-track">
+            {#each gridRows as row, rowIndex}
+              <div class="grid-row" bind:this={rowElements[rowIndex]}>
+                <div class="grid-row-track" bind:this={trackElements[rowIndex]}>
                   {#each row as item}
-                    <div class="media-card" data-id={item.id} on:click={() => executeAction(item)}>
+                    <div
+                      class="media-card"
+                      data-id={item.id}
+                      role="button"
+                      tabindex="0"
+                      on:click={() => executeAction(item)}
+                      on:keydown={(event) => onActivateCard(event, item)}
+                    >
                       <div class="thumbnail">
                         <img src={getThumbnailUrl(item)} alt={item.title || item.id} loading="lazy" on:error={(e) => onImageError(e, item)} />
                       </div>
@@ -251,17 +332,22 @@
               <tr>
                 <th>Thumbnail</th>
                 <th>Title</th>
+                <th>Type</th>
                 <th>Date</th>
                 <th>Tags</th>
               </tr>
             </thead>
             <tbody>
-              {#each tableItems as item}
-                <tr data-id={item.id} on:click={() => executeAction(item)}>
+              {#each tableItems as item (item.id)}
+                <tr
+                  data-id={item.id}
+                  on:click={() => executeAction(item)}
+                >
                   <td>
                     <img class="table-thumbnail" src={getThumbnailUrl(item)} alt={item.title || item.id} loading="lazy" on:error={(e) => onImageError(e, item)} />
                   </td>
                   <td class="table-title">{item.title || item.id}</td>
+                  <td class="table-type">{item.type || '-'}</td>
                   <td class="table-date">{item.date || '-'}</td>
                   <td>
                     <div class="table-tags">
@@ -278,18 +364,6 @@
               {/each}
             </tbody>
           </table>
-        {/if}
-      </section>
-    {:else}
-      <section class="simple-view">
-        {#if filteredByType.length === 0}
-          <p class="empty-msg">No data</p>
-        {:else}
-          <ul class="simple-list">
-            {#each filteredByType as item}
-              <li class="simple-item">{item.id}</li>
-            {/each}
-          </ul>
         {/if}
       </section>
     {/if}

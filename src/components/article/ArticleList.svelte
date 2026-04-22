@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
   type Article = {
     id: string;
     title?: string;
@@ -8,10 +10,29 @@
   export let articles: Article[] = [];
 
   const sorted = [...articles].sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''));
+  const modeRoutes = ['/opus/?view=grid', '/aboutme/', '/article/'] as const;
 
   const goTo = (href: string) => {
     window.location.href = href;
   };
+
+  onMount(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+
+      event.preventDefault();
+      const currentIndex = 2;
+      const delta = event.key === 'ArrowRight' ? 1 : -1;
+      const nextIndex = (currentIndex + delta + modeRoutes.length) % modeRoutes.length;
+      goTo(modeRoutes[nextIndex]);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  });
 </script>
 
 <div class="container">
@@ -30,7 +51,7 @@
       <h2 class="article-home-title">Article</h2>
       <ul class="article-list">
         {#if sorted.length === 0}
-          <li class="article-list-empty">（記事なし）</li>
+          <li class="article-list-empty">No data</li>
         {:else}
           {#each sorted as article}
             <li class="article-list-item">
