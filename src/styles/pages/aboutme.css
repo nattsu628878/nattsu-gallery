@@ -105,6 +105,7 @@
 .skills-marquee {
   width: 100%;
   overflow: hidden;
+  position: relative;
   animation: skills-row-fade-in 0.45s ease-out backwards;
 }
 
@@ -114,7 +115,20 @@
   align-items: center;
   gap: 0.5rem;
   width: max-content;
-  animation: skills-marquee 36s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
+.skills-track--a {
+  animation: skills-marquee-a 36s linear infinite;
+}
+
+.skills-track--b {
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: skills-marquee-b 36s linear infinite;
   will-change: transform;
 }
 
@@ -131,9 +145,14 @@
   to { opacity: 1; }
 }
 
-@keyframes skills-marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+@keyframes skills-marquee-a {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-100%, 0, 0); }
+}
+
+@keyframes skills-marquee-b {
+  from { transform: translate3d(100%, 0, 0); }
+  to { transform: translate3d(0, 0, 0); }
 }
 
 @media (prefers-reduced-motion: reduce) {

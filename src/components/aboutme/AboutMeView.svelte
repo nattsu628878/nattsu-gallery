@@ -12,22 +12,24 @@
     { src: 'https://skillicons.dev/icons?i=svelte', alt: 'Svelte' },
     { src: 'https://skillicons.dev/icons?i=astro', alt: 'Astro' },
     { src: 'https://skillicons.dev/icons?i=bevy', alt: 'Bevy' },
-    { src: 'https://skillicons.dev/icons?i=vscode', alt: 'VS Code' },
     { src: 'https://skillicons.dev/icons?i=godot', alt: 'Godot' },
     { src: 'https://skillicons.dev/icons?i=unity', alt: 'Unity' },
     { src: 'https://skillicons.dev/icons?i=blender', alt: 'Blender' },
     { src: withBase('aboutme/logic-pro.webp'), alt: 'Logic Pro' },
     { src: withBase('aboutme/ableton-live.webp'), alt: 'Ableton Live' },
     { src: withBase('aboutme/renoise.webp'), alt: 'Renoise' },
+    { src: withBase('aboutme/lilypond.webp'), alt: 'LilyPond' },
     { src: withBase('aboutme/final-cut-pro.webp'), alt: 'Final Cut Pro' },
     { src: withBase('aboutme/motion.webp'), alt: 'Motion' },
     { src: withBase('aboutme/touch-designer.webp'), alt: 'TouchDesigner' },
+    { src: 'https://skillicons.dev/icons?i=vscode', alt: 'VS Code' },
+    { src: 'https://skillicons.dev/icons?i=docker', alt: 'Docker' },
+    { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nixos/nixos-original.svg', alt: 'Nix' },
     { src: 'https://skillicons.dev/icons?i=apple', alt: 'macOS' },
-    { src: 'https://raw.githubusercontent.com/simple-icons/simple-icons/master/icons/zorin.svg', alt: 'Zorin OS' },
-    { src: 'https://raw.githubusercontent.com/simple-icons/simple-icons/master/icons/steamdeck.svg', alt: 'Steam Deck' }
+    { src: withBase('aboutme/zorin-color.svg'), alt: 'Zorin OS' },
+    { src: withBase('aboutme/steamdeck-color.svg'), alt: 'Steam Deck' }
   ];
 
-  const skillsLoop = [...skills, ...skills];
   const modeRoutes = ['opus/?view=grid', 'aboutme/', 'article/'] as const;
 
   const goTo = (href: string) => {
@@ -98,15 +100,25 @@
       <div class="about-skills">
         <div class="about-favorites-section">
           <h3>Favorites</h3>
+          <br>
         </div>
         <div class="skills-marquee">
-          <div class="skills-track">
-            {#each skillsLoop as skill, idx}
+          <div class="skills-track skills-track--a">
+            {#each skills as skill}
               <img
                 class="skill-icon"
                 src={skill.src}
-                alt={idx < skills.length ? skill.alt : ''}
-                aria-hidden={idx >= skills.length}
+                alt={skill.alt}
+                loading="lazy"
+              />
+            {/each}
+          </div>
+          <div class="skills-track skills-track--b" aria-hidden="true">
+            {#each skills as skill}
+              <img
+                class="skill-icon"
+                src={skill.src}
+                alt=""
                 loading="lazy"
               />
             {/each}
