@@ -23,8 +23,6 @@
     { src: withBase('aboutme/motion.webp'), alt: 'Motion' },
     { src: withBase('aboutme/touch-designer.webp'), alt: 'TouchDesigner' },
     { src: 'https://skillicons.dev/icons?i=apple', alt: 'macOS' },
-    { src: 'https://skillicons.dev/icons?i=debian', alt: 'Debian-based' },
-    { src: 'https://skillicons.dev/icons?i=arch', alt: 'Arch-based' },
     { src: 'https://raw.githubusercontent.com/simple-icons/simple-icons/master/icons/zorin.svg', alt: 'Zorin OS' },
     { src: 'https://raw.githubusercontent.com/simple-icons/simple-icons/master/icons/steamdeck.svg', alt: 'Steam Deck' }
   ];
