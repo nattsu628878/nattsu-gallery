@@ -50,6 +50,19 @@ jobs:
       - name: Normalize opus assets to webp
         run: bash scripts/normalize-opus-assets.sh
 
+      - name: Verify opus assets
+        run: |
+          echo "Opus markdown files:"
+          ls -la src/data/opus/markdown || true
+          echo ""
+          echo "Opus asset files:"
+          ls -la src/data/opus/markdown/data || true
+          count=$(ls -1 src/data/opus/markdown/data 2>/dev/null | wc -l | tr -d ' ')
+          if [ "${count:-0}" -eq 0 ]; then
+            echo "ERROR: No opus assets were synced to src/data/opus/markdown/data" >&2
+            exit 1
+          fi
+
       - name: Build
         run: npm run build
 
