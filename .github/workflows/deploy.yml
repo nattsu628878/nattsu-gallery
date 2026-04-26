@@ -47,6 +47,9 @@ jobs:
           DROPBOX_TIMELINE_PATH: ${{ secrets.DROPBOX_TIMELINE_PATH }}
         run: python3 scripts/fetch-dropbox-content.py
 
+      - name: Normalize article assets to webp/webm
+        run: bash scripts/normalize-article-assets.sh
+
       - name: Normalize opus assets to webp
         run: bash scripts/normalize-opus-assets.sh
 

@@ -18,6 +18,9 @@ fi
 echo "[sync] Fetching article/opus/timeline from Dropbox..."
 python3 "$ROOT/scripts/fetch-dropbox-content.py"
 
+echo "[sync] Normalizing article assets to webp/webm..."
+bash "$ROOT/scripts/normalize-article-assets.sh"
+
 echo "[sync] Normalizing opus images to webp..."
 bash "$ROOT/scripts/normalize-opus-assets.sh"
 
