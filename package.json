@@ -6,8 +6,9 @@
   "scripts": {
     "predev": "bash scripts/normalize-article-assets.sh",
     "dev": "astro dev",
-    "dev:opus-editor": "npm --prefix tools/opus-editor run dev",
-    "dev:all": "npm run predev && npx concurrently -k -n astro,opus -c blue,magenta \"npm run dev -- --host 127.0.0.1\" \"npm --prefix tools/opus-editor run dev\"",
+    "dev:nattsu-editor": "npm --prefix tools/nattsu-editor run dev",
+    "dev:all": "npm run predev && npx concurrently -k -n astro,editorhub -c blue,green \"npm run dev -- --host 127.0.0.1\" \"npm --prefix tools/nattsu-editor run dev\"",
+    "dev:editor-all": "npm run dev:all",
     "build": "astro build",
     "preview": "astro preview"
   },

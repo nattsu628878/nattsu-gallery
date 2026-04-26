@@ -103,6 +103,14 @@
   opacity: 0.42;
 }
 
+.filter-toggle--exclude {
+  background: #f6f6f6;
+  color: #555;
+  border-color: #cfcfcf;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
 .mode-section {
   min-height: 40vh;
 }

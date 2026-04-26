@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import OpusEditor from '../components/OpusEditor.svelte';
+---
+
+<BaseLayout title="Opus Editor - natʇsu editor">
+  <header>
+    <div class="header-row header-row-top">
+      <h1 class="header-title">natʇsu editor / opus</h1>
+      <div class="mode-toggle">
+        <a class="view-btn" href="/">Home</a>
+        <a class="view-btn" href="/timeline">Time Line Editor</a>
+        <a class="view-btn" href="http://127.0.0.1:4321/nattsu-gallery/opus/" target="_blank" rel="noopener noreferrer">Open Opus</a>
+      </div>
+    </div>
+  </header>
+  <main>
+    <OpusEditor client:only="svelte" />
+  </main>
+</BaseLayout>

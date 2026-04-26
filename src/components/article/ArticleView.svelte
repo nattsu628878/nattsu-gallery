@@ -12,7 +12,7 @@
 
   export let articles: Article[] = [];
   export let initialId = '';
-  const modeRoutes = ['opus/?view=grid', 'aboutme/', 'article/'] as const;
+  const modeRoutes = ['opus/?view=grid', 'article/', 'timeline/', 'aboutme/'] as const;
 
   const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
   const id = (initialId || params.get('id') || '').trim();
@@ -49,7 +49,7 @@
       if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
 
       event.preventDefault();
-      const currentIndex = 2;
+      const currentIndex = 1;
       const delta = event.key === 'ArrowRight' ? 1 : -1;
       const nextIndex = (currentIndex + delta + modeRoutes.length) % modeRoutes.length;
       goTo(modeRoutes[nextIndex]);
@@ -66,8 +66,9 @@
       <h1 class="header-title">natʇsu</h1>
       <div class="mode-toggle" id="modeToggle">
         <button class="view-btn" on:click={() => goTo('opus/?view=grid')}>Opus</button>
-        <button class="view-btn" on:click={() => goTo('aboutme/')}>About Me</button>
         <button class="view-btn active" on:click={() => goTo('article/')}>Article</button>
+        <button class="view-btn" on:click={() => goTo('timeline/')}>Time Line</button>
+        <button class="view-btn" on:click={() => goTo('aboutme/')}>About Me</button>
       </div>
     </div>
   </header>

@@ -1,25 +1,18 @@
 #!/usr/bin/env bash
-# 開発用: Astro のみ（predev で Article アセット正規化のあと dev）
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
+source "$ROOT/scripts/dev-common.sh"
 
-if [ ! -f "$ROOT/package.json" ]; then
-  echo "エラー: package.json が見つかりません。" >&2
-  exit 1
-fi
+ensure_project_root "$ROOT"
+ensure_node_modules "$ROOT" "プロジェクト"
 
-if [ ! -d "$ROOT/node_modules" ]; then
-  echo "依存関係をインストールしています..."
-  (cd "$ROOT" && npm install) || exit 1
-  echo ""
-fi
-
-echo "開発サーバ: Astro（opus-editor は起動しません）"
-echo "  http://127.0.0.1:4321/nattsu-gallery/"
+echo "開発サーバ: Astro のみ"
+echo "  Local:   http://127.0.0.1:4321/nattsu-gallery/"
+echo "  Mobile:  http://<YOUR_LOCAL_IP>:4321/nattsu-gallery/"
 echo ""
 echo "停止: Ctrl+C"
 echo ""
 
 cd "$ROOT"
-exec npm run dev -- --host 127.0.0.1
+exec npm run dev -- --host 0.0.0.0

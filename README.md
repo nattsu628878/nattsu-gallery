@@ -8,7 +8,7 @@ https://nattsu628878.github.io/nattsu-gallery
 ## コマンド
 
 - **開発（サイト全体）**: `./dev.sh`（Astro のみ。`npm run dev` の前に `predev` で Article アセット正規化）
-- **Opus Editor**: `./start-opus-editor.sh`（Astro + `tools/opus-editor` を同時起動。未導入の `node_modules` は自動で `npm install`）
+- **nattsu editor**: `./editor.sh`（Astro + `tools/nattsu-editor` を同時起動。未導入の `node_modules` は自動で `npm install`）
 - ビルド: `npm run build`（`@astrojs/node` により静的ファイルは `dist/client`。GitHub Pages もここを公開）
 - プレビュー: `npm run preview`（Node アダプタのサーバでプレビュー）
 
@@ -31,7 +31,7 @@ https://nattsu628878.github.io/nattsu-gallery
 
 ## ディレクトリ
 
-- **Opus Editor（ローカル専用 UI）**: `tools/opus-editor`（Vite + Svelte）。Vite 開発サーバは、ブラウザからの `fetch` をプロキシで Astro 側へ渡す（`http://127.0.0.1:5174` → `.../nattsu-gallery/...`）。
+- **nattsu editor（ローカル専用 UI）**: `tools/nattsu-editor`（Astro + Svelte）。`/`（ホーム）から `opus` / `timeline` の編集画面へ遷移して、同一アプリ内で編集する。
 
 ### Opus の保存（API 経由）
 

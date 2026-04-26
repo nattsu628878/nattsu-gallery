@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="natʇsu editor">
+  <header>
+    <div class="header-row header-row-top">
+      <h1 class="header-title">natʇsu editor</h1>
+      <div class="mode-toggle">
+        <a class="view-btn" href="http://127.0.0.1:4321/nattsu-gallery/opus/" target="_blank" rel="noopener noreferrer">Open Opus</a>
+        <a class="view-btn" href="http://127.0.0.1:4321/nattsu-gallery/timeline/" target="_blank" rel="noopener noreferrer">Open Time Line</a>
+        <a class="view-btn" href="http://127.0.0.1:4321/nattsu-gallery/article/" target="_blank" rel="noopener noreferrer">Open Article</a>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="editor-links">
+      <a class="editor-card" href="/opus">
+        <h2>Opus Editor</h2>
+        <p>作品データ編集・画像/動画アップロード・順序調整</p>
+      </a>
+      <a class="editor-card" href="/timeline">
+        <h2>Time Line Editor</h2>
+        <p>タイムライン投稿編集・画像アップロード・順序調整</p>
+      </a>
+      <a class="editor-card" href="/article">
+        <h2>Article Sync</h2>
+        <p>Obsidian同期実行とMarkdown状況の確認</p>
+      </a>
+    </section>
+  </main>
+</BaseLayout>

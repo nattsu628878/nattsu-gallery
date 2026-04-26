@@ -1,28 +1,32 @@
 import { renderers } from './renderers.mjs';
 import { c as createExports, s as serverEntrypointModule } from './chunks/_@astrojs-ssr-adapter_DPSfAMPx.mjs';
-import { manifest } from './manifest_B5wmi999.mjs';
+import { manifest } from './manifest_-Icuzzfq.mjs';
 
 const serverIslandMap = new Map();;
 
 const _page0 = () => import('./pages/_image.astro.mjs');
 const _page1 = () => import('./pages/aboutme.astro.mjs');
 const _page2 = () => import('./pages/api/editor/opus.astro.mjs');
-const _page3 = () => import('./pages/article/view.astro.mjs');
-const _page4 = () => import('./pages/article/view.html.astro.mjs');
-const _page5 = () => import('./pages/article/_prefix_/_id_.astro.mjs');
-const _page6 = () => import('./pages/article.astro.mjs');
-const _page7 = () => import('./pages/opus.astro.mjs');
-const _page8 = () => import('./pages/index.astro.mjs');
+const _page3 = () => import('./pages/api/editor/timeline.astro.mjs');
+const _page4 = () => import('./pages/article/view.astro.mjs');
+const _page5 = () => import('./pages/article/view.html.astro.mjs');
+const _page6 = () => import('./pages/article/_prefix_/_id_.astro.mjs');
+const _page7 = () => import('./pages/article.astro.mjs');
+const _page8 = () => import('./pages/opus.astro.mjs');
+const _page9 = () => import('./pages/timeline.astro.mjs');
+const _page10 = () => import('./pages/index.astro.mjs');
 const pageMap = new Map([
     ["node_modules/astro/dist/assets/endpoint/node.js", _page0],
     ["src/pages/aboutme/index.astro", _page1],
     ["src/pages/api/editor/opus.ts", _page2],
-    ["src/pages/article/view.astro", _page3],
-    ["src/pages/article/view.html.astro", _page4],
-    ["src/pages/article/[prefix]/[id].astro", _page5],
-    ["src/pages/article/index.astro", _page6],
-    ["src/pages/opus/index.astro", _page7],
-    ["src/pages/index.astro", _page8]
+    ["src/pages/api/editor/timeline.ts", _page3],
+    ["src/pages/article/view.astro", _page4],
+    ["src/pages/article/view.html.astro", _page5],
+    ["src/pages/article/[prefix]/[id].astro", _page6],
+    ["src/pages/article/index.astro", _page7],
+    ["src/pages/opus/index.astro", _page8],
+    ["src/pages/timeline/index.astro", _page9],
+    ["src/pages/index.astro", _page10]
 ]);
 
 const _manifest = Object.assign(manifest, {

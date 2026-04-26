@@ -11,14 +11,14 @@ const execFileAsync = promisify(execFile);
 const ROOT = process.cwd();
 const ITEMS_PATH = path.join(ROOT, 'src', 'data', 'opus', 'items.json');
 const OPUS_ASSETS_DIR = path.join(ROOT, 'public', 'opus');
-const OPUS_WEBP_BATCH_SCRIPT = path.join(ROOT, 'scripts', 'convert-opus-assets-to-webp.sh');
+const MEDIA_CONVERT_SCRIPT = path.join(ROOT, 'scripts', 'convert-media-assets.sh');
 
 /** 残存 jpg/png の一括 WebP 化と items.json のパス整合（エディタ保存後の取りこぼし用） */
 async function runOpusAssetsToWebpBatch() {
   try {
-    await execFileAsync('bash', [OPUS_WEBP_BATCH_SCRIPT], { cwd: ROOT });
+    await execFileAsync('bash', [MEDIA_CONVERT_SCRIPT, 'opus'], { cwd: ROOT });
   } catch (err) {
-    console.error('[api/editor/opus] convert-opus-assets-to-webp.sh failed:', err);
+    console.error('[api/editor/opus] convert-media-assets.sh opus failed:', err);
   }
 }
 
@@ -82,6 +82,16 @@ async function saveVideoFromBase64(id: string, filename: string, data: string) {
   return `/opus/${outName}`;
 }
 
+function isOpusAssetReferenced(items: OpusItem[], assetPath: string) {
+  return items.some((item) => item.assets?.image === assetPath || item.url === assetPath);
+}
+
+async function unlinkOpusAssetIfUnused(assetPath: string | undefined, items: OpusItem[]) {
+  if (!assetPath || !assetPath.startsWith('/opus/')) return;
+  if (isOpusAssetReferenced(items, assetPath)) return;
+  await fs.unlink(path.join(OPUS_ASSETS_DIR, path.basename(assetPath))).catch(() => {});
+}
+
 export const GET: APIRoute = async () => {
   try {
     const items = await readItems();
@@ -123,6 +133,8 @@ export const POST: APIRoute = async ({ request }) => {
     const existing = await readItems();
     const existingIndex = existing.findIndex((i) => i.id === id);
     const prev = existingIndex >= 0 ? existing[existingIndex] : null;
+    const prevImagePath = prev?.assets?.image;
+    const prevVideoPath = prev?.url;
 
     if (type === 'picture') {
       const image = body?.image;
@@ -155,6 +167,12 @@ export const POST: APIRoute = async ({ request }) => {
     if (type === 'picture' && body?.image?.data && body?.image?.filename) {
       await runOpusAssetsToWebpBatch();
     }
+    if (prevImagePath !== nextItem.assets?.image) {
+      await unlinkOpusAssetIfUnused(prevImagePath, next);
+    }
+    if (prevVideoPath !== nextItem.url) {
+      await unlinkOpusAssetIfUnused(prevVideoPath, next);
+    }
     return new Response(JSON.stringify({ ok: true, item: nextItem }), { status: 200 });
   } catch (error) {
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });
@@ -173,8 +191,12 @@ export const DELETE: APIRoute = async ({ url }) => {
     }
     await writeItems(next);
     const imagePath = target?.assets?.image;
+    const videoPath = target?.url;
     if (imagePath && imagePath.startsWith('/opus/')) {
       await fs.unlink(path.join(OPUS_ASSETS_DIR, path.basename(imagePath))).catch(() => {});
+    }
+    if (videoPath && videoPath.startsWith('/opus/')) {
+      await fs.unlink(path.join(OPUS_ASSETS_DIR, path.basename(videoPath))).catch(() => {});
     }
     return new Response(JSON.stringify({ ok: true }), { status: 200 });
   } catch (error) {

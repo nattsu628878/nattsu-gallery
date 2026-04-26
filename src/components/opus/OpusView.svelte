@@ -21,6 +21,7 @@
 
   const VIEWS = ['grid', 'table'] as const;
   type ViewType = (typeof VIEWS)[number];
+  type TriState = 'include' | 'exclude' | 'off';
   const base = import.meta.env.BASE_URL;
   const withBase = (path: string) => `${base}${path.replace(/^\/+/, '')}`;
   const resolveSitePath = (path?: string) => {
@@ -28,11 +29,11 @@
     if (/^https?:\/\//.test(path) || path.startsWith('data:')) return path;
     return withBase(path);
   };
-  const modeRoutes = ['opus/?view=grid', 'aboutme/', 'article/'] as const;
+  const modeRoutes = ['opus/?view=grid', 'article/', 'timeline/', 'aboutme/'] as const;
 
   let currentView: ViewType = 'grid';
   let sortOrder: 'asc' | 'desc' = 'asc';
-  let selectedTags: string[] = [];
+  let tagFilterStates: Record<string, TriState> = {};
   let showMovie = true;
   let showPicture = true;
   let showHeaderOptions = false;
@@ -85,11 +86,21 @@
   $: allTags = Array.from(
     new Set(filteredByType.flatMap((item) => (Array.isArray(item.tags) ? item.tags : [])))
   ).sort((a, b) => a.localeCompare(b));
+  $: {
+    const next: Record<string, TriState> = {};
+    for (const tag of allTags) next[tag] = tagFilterStates[tag] ?? 'off';
+    tagFilterStates = next;
+  }
+  $: includedTags = allTags.filter((tag) => tagFilterStates[tag] === 'include');
+  $: excludedTags = allTags.filter((tag) => tagFilterStates[tag] === 'exclude');
+  $: isTagAllOn = includedTags.length === 0 && excludedTags.length === 0;
 
   $: filteredByTag = [...filteredByType].filter((item) => {
-    if (selectedTags.length === 0) return true;
+    if (isTagAllOn) return true;
     const itemTags = item.tags ?? [];
-    return selectedTags.some((tag) => itemTags.includes(tag));
+    if (includedTags.length > 0 && !includedTags.some((tag) => itemTags.includes(tag))) return false;
+    if (excludedTags.some((tag) => itemTags.includes(tag))) return false;
+    return true;
   });
 
   $: sortedItems = [...filteredByTag].sort((a, b) => {
@@ -190,12 +201,17 @@
     window.location.href = withBase(href);
   };
 
-  function toggleTag(tag: string) {
-    if (selectedTags.includes(tag)) {
-      selectedTags = selectedTags.filter((t) => t !== tag);
-      return;
-    }
-    selectedTags = [...selectedTags, tag];
+  function cycleTagState(tag: string) {
+    const current = tagFilterStates[tag] ?? 'off';
+    const next: TriState =
+      current === 'off' ? 'include' : current === 'include' ? 'exclude' : 'off';
+    tagFilterStates = { ...tagFilterStates, [tag]: next };
+  }
+
+  function resetTagFilters() {
+    const next: Record<string, TriState> = {};
+    for (const tag of allTags) next[tag] = 'off';
+    tagFilterStates = next;
   }
 
 </script>
@@ -206,8 +222,9 @@
       <h1 class="header-title">natʇsu</h1>
       <div class="mode-toggle">
         <button class="view-btn active" on:click={() => goTo('opus/?view=grid')}>Opus</button>
-        <button class="view-btn" on:click={() => goTo('aboutme/')}>About Me</button>
         <button class="view-btn" on:click={() => goTo('article/')}>Article</button>
+        <button class="view-btn" on:click={() => goTo('timeline/')}>Time Line</button>
+        <button class="view-btn" on:click={() => goTo('aboutme/')}>About Me</button>
       </div>
     </div>
     <div class="header-row-bottom-wrap" class:is-open={showHeaderOptions}>
@@ -253,12 +270,24 @@
                 </div>
                 <div class="setting-item type-filter-group">
                   <span class="type-filter-label">Tag</span>
+                  <button
+                    type="button"
+                    class={`filter-toggle ${isTagAllOn ? 'filter-toggle--on' : 'filter-toggle--off'}`}
+                    on:click={resetTagFilters}
+                    aria-pressed={isTagAllOn}
+                  >ALL</button>
                   {#each allTags as tag}
                     <button
                       type="button"
-                      class={`filter-toggle ${selectedTags.includes(tag) ? 'filter-toggle--on' : 'filter-toggle--off'}`}
-                      on:click={() => toggleTag(tag)}
-                      aria-pressed={selectedTags.includes(tag)}
+                      class={`filter-toggle ${
+                        tagFilterStates[tag] === 'include'
+                          ? 'filter-toggle--on'
+                          : tagFilterStates[tag] === 'exclude'
+                            ? 'filter-toggle--exclude'
+                            : 'filter-toggle--off'
+                      }`}
+                      on:click={() => cycleTagState(tag)}
+                      aria-pressed={tagFilterStates[tag] !== 'off'}
                     >{tag}</button>
                   {/each}
                 </div>
