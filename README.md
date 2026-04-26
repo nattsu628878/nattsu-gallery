@@ -19,6 +19,12 @@ https://nattsu628878.github.io/nattsu-gallery
 DROPBOX_ACCESS_TOKEN=... python3 scripts/fetch-dropbox-content.py
 ```
 
+または、ラッパースクリプト:
+
+```bash
+DROPBOX_ACCESS_TOKEN=... ./sync-dropbox-content.sh
+```
+
 必要ならパス上書き:
 
 ```bash
@@ -28,6 +34,30 @@ DROPBOX_OPUS_PATH=/nattsu-gallery/opus \
 DROPBOX_TIMELINE_PATH=/nattsu-gallery/timeline \
 python3 scripts/fetch-dropbox-content.py
 ```
+
+### `DROPBOX_ACCESS_TOKEN` の設定方法
+
+1回だけ:
+
+```bash
+DROPBOX_ACCESS_TOKEN='YOUR_TOKEN' ./sync-dropbox-content.sh
+```
+
+現在のシェルで有効化:
+
+```bash
+export DROPBOX_ACCESS_TOKEN='YOUR_TOKEN'
+./sync-dropbox-content.sh
+```
+
+恒久設定（zsh）:
+
+```bash
+echo "export DROPBOX_ACCESS_TOKEN='YOUR_TOKEN'" >> ~/.zshrc
+source ~/.zshrc
+```
+
+※ トークンをスクリプトやリポジトリに直接書かないこと
 
 必要なら Opus 画像を WebP 化:
 
