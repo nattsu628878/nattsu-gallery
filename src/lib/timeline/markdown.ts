@@ -4,6 +4,8 @@ export type TimelineItem = {
   account?: string;
   content?: string;
   quoteTo?: string;
+  /** ファイル名先頭の表示順（同日内ソート用） */
+  order?: number;
   assets?: {
     image?: string;
     video?: string;
@@ -40,6 +42,88 @@ function ensureId(filePath: string, frontmatterId?: string) {
   const fallback = filePath.replace(/\\/g, "/").split("/").pop()?.replace(/\.md$/i, "") ?? "";
   const id = String(frontmatterId || fallback).trim();
   return id.replace(/[^a-zA-Z0-9_-]/g, "-");
+}
+
+/** 先頭2桁年を4桁年へ（例: 26-04-27 → 2026-04-27） */
+function expandYearInDatePart(y: string): string {
+  if (y.length === 4) return y;
+  const n = parseInt(y, 10);
+  if (!Number.isFinite(n) || n < 0) return y;
+  if (n <= 99) return String(2000 + n);
+  return y;
+}
+
+/** YY-MM-DD または YYYY-MM-DD を正規化 */
+function normalizeDateOnly(token: string): string {
+  const m = String(token).match(/^(\d{2,4})-(\d{2})-(\d{2})$/);
+  if (!m) return String(token).trim();
+  return `${expandYearInDatePart(m[1])}-${m[2]}-${m[3]}`;
+}
+
+/**
+ * ファイル名の日付+通し（同一日内の何番目）から canonical id
+ * 1番目だけ `2026-04-27`、2番目以降 `2026-04-27-2`
+ */
+function idFromDateAndSeq(dateToken: string, seqStr: string): string {
+  const d = normalizeDateOnly(dateToken);
+  const seq = parseInt(seqStr, 10) || 1;
+  if (seq <= 1) return d;
+  return `${d}-${seq}`;
+}
+
+/**
+ * 引用先トークン（`2026-04-27` または `26-04-27-2` 等）を id に正規化
+ */
+function normalizeQuoteIdToken(quote: string): string {
+  const s = String(quote).trim();
+  const m = s.match(/^(\d{2,4}-\d{2}-\d{2})(?:-(\d+))?$/);
+  if (!m) return s;
+  const d = normalizeDateOnly(m[1]);
+  if (!m[2]) return d;
+  if (m[2] === "1") return d;
+  return `${d}-${m[2]}`;
+}
+
+/** 例: 1_nattsu_26-04-27_2.md / 1_emo_2026-04-27_26-04-27_2.md */
+const NAMED_BARE = /^(\d+)_(nattsu|emo|tech)_((?:\d{2}|\d{4})-\d{2}-\d{2})_(\d+)$/i;
+const NAMED_QUOTED =
+  /^(\d+)_(nattsu|emo|tech)_((?:(?:\d{2}|\d{4})-\d{2}-\d{2})(?:-\d+)?)_((?:\d{2}|\d{4})-\d{2}-\d{2})_(\d+)$/i;
+
+function parseFilenameMeta(
+  filePath: string,
+  basename: string
+): { id: string; account: string; date: string; quoteTo?: string; order: number } | null {
+  const mQ = basename.match(NAMED_QUOTED);
+  if (mQ) {
+    const order = parseInt(mQ[1], 10) || 0;
+    const account = mQ[2].toLowerCase();
+    const quoteTo = normalizeQuoteIdToken(mQ[3]);
+    const id = idFromDateAndSeq(mQ[4], mQ[5]);
+    return {
+      id,
+      account,
+      date: normalizeDateOnly(mQ[4]),
+      quoteTo: quoteTo || undefined,
+      order,
+    };
+  }
+  const mB = basename.match(NAMED_BARE);
+  if (mB) {
+    const order = parseInt(mB[1], 10) || 0;
+    const account = mB[2].toLowerCase();
+    const id = idFromDateAndSeq(mB[3], mB[4]);
+    return { id, account, date: normalizeDateOnly(mB[3]), order };
+  }
+  return null;
+}
+
+function inferDateFromFilePath(filePath: string, id?: string) {
+  const normalized = filePath.replace(/\\/g, "/");
+  const matchedPath = normalized.match(/(?:^|\/)(\d{2,4}-\d{2}-\d{2})(?:\/|$)/);
+  if (matchedPath?.[1]) return normalizeDateOnly(matchedPath[1]);
+  const matchedId = String(id || "").match(/^(\d{2,4}-\d{2}-\d{2})(?:[-_].*)?$/);
+  if (matchedId?.[1]) return normalizeDateOnly(matchedId[1]);
+  return undefined;
 }
 
 function resolveAssetUrl(assetMap: Map<string, string>, target?: string) {
@@ -85,10 +169,12 @@ export function parseTimelineMarkdownFiles(
   markdownModules: Record<string, string>,
   assetMap: Map<string, string> = new Map()
 ): TimelineItem[] {
-  return Object.entries(markdownModules)
+  const items = Object.entries(markdownModules)
     .map(([filePath, raw]) => {
       const { meta, body } = parseFrontmatter(raw);
-      const id = ensureId(filePath, meta.id);
+      const stem = filePath.replace(/\\/g, "/").split("/").pop()?.replace(/\.md$/i, "") ?? "";
+      const fromName = parseFilenameMeta(filePath, stem);
+      const id = fromName ? fromName.id : ensureId(filePath, meta.id);
       if (!id) return null;
       const embedded = extractEmbeddedMedia(body, assetMap);
       const image =
@@ -97,13 +183,23 @@ export function parseTimelineMarkdownFiles(
         resolveAssetUrl(assetMap, meta.video?.trim()) || embedded.video || meta.video?.trim() || "";
       const item: TimelineItem = {
         id,
-        date: meta.date?.trim() || undefined,
-        account: meta.account?.trim() || undefined,
-        quoteTo: meta.quoteTo?.trim() || undefined,
+        date: fromName?.date || meta.date?.trim() || inferDateFromFilePath(filePath, id),
+        account: (fromName?.account || meta.account?.trim()) || undefined,
+        quoteTo: (fromName?.quoteTo || meta.quoteTo?.trim()) || undefined,
         content: embedded.cleaned || undefined,
+        order: fromName?.order,
       };
       if (image || video) item.assets = { image: image || undefined, video: video || undefined };
       return item;
     })
     .filter((item): item is TimelineItem => Boolean(item));
+
+  return items.sort((a, b) => {
+    const byDate = (b.date || "").localeCompare(a.date || "");
+    if (byDate !== 0) return byDate;
+    const oa = a.order ?? 0;
+    const ob = b.order ?? 0;
+    if (oa !== ob) return oa - ob;
+    return a.id.localeCompare(b.id);
+  });
 }

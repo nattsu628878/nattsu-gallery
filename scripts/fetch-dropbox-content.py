@@ -127,7 +127,9 @@ def copy_timeline_assets(extracted_root: Path, timeline_assets_dir: Path) -> int
             continue
         if file_path.suffix.lower() not in MEDIA_EXTENSIONS:
             continue
-        target = timeline_assets_dir / file_path.name
+        rel = file_path.relative_to(extracted_root)
+        target = timeline_assets_dir / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(file_path, target)
         copied += 1
     return copied
@@ -141,7 +143,9 @@ def copy_opus_assets(extracted_root: Path, opus_assets_dir: Path) -> int:
             continue
         if file_path.suffix.lower() not in MEDIA_EXTENSIONS:
             continue
-        target = opus_assets_dir / file_path.name
+        rel = file_path.relative_to(extracted_root)
+        target = opus_assets_dir / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(file_path, target)
         copied += 1
     return copied
@@ -155,7 +159,9 @@ def sync_opus_markdown(extracted_root: Path, opus_markdown_dir: Path) -> int:
             continue
         if file_path.suffix.lower() != ".md":
             continue
-        target = opus_markdown_dir / file_path.name
+        rel = file_path.relative_to(extracted_root)
+        target = opus_markdown_dir / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(file_path, target)
         copied += 1
     return copied
@@ -169,7 +175,9 @@ def sync_timeline_markdown(extracted_root: Path, timeline_markdown_dir: Path) ->
             continue
         if file_path.suffix.lower() != ".md":
             continue
-        target = timeline_markdown_dir / file_path.name
+        rel = file_path.relative_to(extracted_root)
+        target = timeline_markdown_dir / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(file_path, target)
         copied += 1
     return copied

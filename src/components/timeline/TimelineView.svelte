@@ -9,6 +9,7 @@
     account?: string;
     content?: string;
     quoteTo?: string;
+    order?: number;
     assets?: {
       image?: string;
       video?: string;
