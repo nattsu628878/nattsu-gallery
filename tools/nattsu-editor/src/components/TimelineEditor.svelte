@@ -1,5 +1,5 @@
 <script lang="ts">
-  type TimelineItem = { id: string; date?: string; account?: string; content?: string; assets?: { image?: string; video?: string } };
+  type TimelineItem = { id: string; date?: string; account?: string; content?: string; quoteTo?: string; assets?: { image?: string; video?: string } };
   const API = 'http://127.0.0.1:4321/nattsu-gallery/api/editor/timeline';
   const resolveAssetPath = (path?: string) => {
     if (!path) return '';
@@ -32,6 +32,8 @@
   let date = todayIso();
   let account = 'nattsu';
   let content = '';
+  let quoteTo = '';
+  let selectingQuote = false;
   let imageBase64 = '';
   let imageFilename = '';
   let previewUrl = '';
@@ -60,6 +62,7 @@
     date = item.date?.trim() ? item.date : todayIso();
     account = item.account || 'nattsu';
     content = item.content || '';
+    quoteTo = item.quoteTo || '';
     imageBase64 = '';
     imageFilename = '';
     videoBase64 = '';
@@ -74,6 +77,7 @@
     id = generateIdFromDate(date, items);
     account = 'nattsu';
     content = '';
+    quoteTo = '';
     imageBase64 = '';
     imageFilename = '';
     videoBase64 = '';
@@ -87,6 +91,28 @@
   function createDraft() {
     resetForm();
     selectedId = '__new__';
+  }
+  function onListItemClick(item: TimelineItem) {
+    if (!selectingQuote) {
+      selectItem(item);
+      return;
+    }
+    if (!selectedId) {
+      status = '先に引用元ではなく、編集する投稿を選択してください';
+      statusError = true;
+      selectingQuote = false;
+      return;
+    }
+    if (item.id === id) {
+      status = '自分自身は引用できません';
+      statusError = true;
+      selectingQuote = false;
+      return;
+    }
+    quoteTo = item.id;
+    selectingQuote = false;
+    status = '';
+    statusError = false;
   }
   function onDateChangeForNewItem(nextDate: string) {
     date = nextDate;
@@ -180,6 +206,9 @@
     const index = items.findIndex((item) => item.id === targetId);
     if (index >= 0) move(index, delta);
   };
+  $: quoteCandidates = items
+    .filter((item) => item.id !== id)
+    .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''));
   async function saveItem() {
     status = '';
     statusError = false;
@@ -189,7 +218,13 @@
       image?: { filename: string; data: string };
       videoFile?: { filename: string; data: string };
     } = {
-      item: { id: id.trim(), date: date || undefined, account: account || 'nattsu', content: content.trim() || undefined }
+      item: {
+        id: id.trim(),
+        date: date || undefined,
+        account: account || 'nattsu',
+        content: content.trim() || undefined,
+        quoteTo: quoteTo.trim() || undefined
+      }
     };
     if (imageBase64 && imageFilename) payload.image = { filename: imageFilename, data: imageBase64 };
     if (videoBase64 && videoFilename) payload.videoFile = { filename: videoFilename, data: videoBase64 };
@@ -233,7 +268,7 @@
               {:else}
                 <div class="item-preview item-preview--empty"></div>
               {/if}
-              <button type="button" class:selected={selectedId === item.id} on:click={() => selectItem(item)}>{item.id}</button>
+              <button type="button" class:selected={selectedId === item.id} on:click={() => onListItemClick(item)}>{item.id}</button>
             </div>
             <div class="order-btns">
               <button type="button" class="oe-order" on:click={() => moveById(item.id, -1)}>↑</button>
@@ -251,6 +286,7 @@
       <label class="field-label" for="te-date">Date</label><input id="te-date" class="field-input" type="date" value={date} on:input={(event) => onDateChangeForNewItem((event.currentTarget as HTMLInputElement).value)} />
       <label class="field-label" for="te-account">Account</label><div id="te-account" class="toggle-group">{#each ACCOUNT_OPTIONS as itemAccount}<button type="button" class={`toggle-btn ${account === itemAccount.value ? 'is-on' : ''}`} on:click={() => (account = itemAccount.value)}>{itemAccount.label}</button>{/each}</div>
       <label class="field-label" for="te-content">Content</label><textarea id="te-content" class="field-input field-textarea" bind:value={content}></textarea>
+      <label class="field-label" for="te-quote-current">Quote</label><div class="stack-field"><div class="toggle-group"><button type="button" class={`toggle-btn ${selectingQuote ? 'is-on' : ''}`} on:click={() => (selectingQuote = !selectingQuote)}>{selectingQuote ? '引用先を選択中' : '引用する'}</button><button type="button" class="toggle-btn" on:click={() => { quoteTo = ''; selectingQuote = false; }}>引用解除</button></div><input id="te-quote-current" class="field-input" value={quoteTo || '(なし)'} readonly /></div>
       <label class="field-label" for="te-image">Image</label><input id="te-image" class="field-file" type="file" accept="image/*" bind:this={imageInput} on:change={onPickImage} />
       <label class="field-label" for="te-video">Video</label><input id="te-video" class="field-file" type="file" accept="video/*" bind:this={videoInput} on:change={onPickVideo} />
     </div>

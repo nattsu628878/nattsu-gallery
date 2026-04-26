@@ -8,6 +8,7 @@
     date?: string;
     account?: string;
     content?: string;
+    quoteTo?: string;
     assets?: {
       image?: string;
       video?: string;
@@ -87,6 +88,7 @@
     return true;
   });
   $: timelineItems = [...filteredItems].sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''));
+  $: timelineItemMap = new Map(items.map((item) => [item.id, item] as const));
 
   const cycleAccountState = (account: string) => {
     const current = accountFilterStates[account] ?? 'off';
@@ -99,6 +101,11 @@
     const next: Record<string, TriState> = {};
     for (const account of allAccounts) next[account] = 'off';
     accountFilterStates = next;
+  };
+  const getQuotedItem = (item: TimelineItem) => {
+    const targetId = item.quoteTo?.trim();
+    if (!targetId) return null;
+    return timelineItemMap.get(targetId) || null;
   };
 </script>
 
@@ -166,6 +173,20 @@
                   <span class="timeline-date">{item.date || '-'}</span>
                 </div>
                 <p class="timeline-content">{item.content || ''}</p>
+                {#if item.quoteTo}
+                  {@const quoted = getQuotedItem(item)}
+                  <div class="timeline-quote">
+                    {#if quoted}
+                      <div class="timeline-quote-meta">
+                        <span>{getAccountLabel(quoted.account)}</span>
+                        <span>{quoted.date || '-'}</span>
+                      </div>
+                      <p class="timeline-quote-content">{quoted.content || ''}</p>
+                    {:else}
+                      <p class="timeline-quote-content">引用元: {item.quoteTo}（見つかりません）</p>
+                    {/if}
+                  </div>
+                {/if}
                 {#if item.assets?.image}
                   <img
                     class="timeline-image"

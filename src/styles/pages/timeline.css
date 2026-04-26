@@ -130,6 +130,31 @@
   line-height: 1.5;
 }
 
+.timeline-quote {
+  margin-top: 0.45rem;
+  border: 1px solid #e3e3e3;
+  border-left: 3px solid var(--accent);
+  background: #fbfbfb;
+  padding: 0.45rem 0.55rem;
+}
+
+.timeline-quote-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.42rem;
+  color: #6e6e6e;
+  font-size: 0.72rem;
+  margin-bottom: 0.2rem;
+}
+
+.timeline-quote-content {
+  margin: 0;
+  font-size: 0.76rem;
+  color: #595959;
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
 .timeline-image {
   margin-top: 0.45rem;
   width: min(100%, 540px);

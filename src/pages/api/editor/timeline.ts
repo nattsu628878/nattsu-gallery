@@ -16,6 +16,7 @@ type TimelineItem = {
   date?: string;
   account?: string;
   content?: string;
+  quoteTo?: string;
   assets?: {
     image?: string;
     video?: string;
@@ -135,7 +136,8 @@ export const POST: APIRoute = async ({ request }) => {
       id,
       date: raw?.date ? String(raw.date).trim() : undefined,
       account: raw?.account ? String(raw.account).trim() : undefined,
-      content: raw?.content ? String(raw.content).trim() : undefined
+      content: raw?.content ? String(raw.content).trim() : undefined,
+      quoteTo: raw?.quoteTo ? sanitizeId(raw.quoteTo) : undefined
     };
 
     const existing = await readItems();
