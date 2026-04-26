@@ -23,10 +23,10 @@
     { src: withBase('aboutme/motion.webp'), alt: 'Motion' },
     { src: withBase('aboutme/touch-designer.webp'), alt: 'TouchDesigner' },
     { src: 'https://skillicons.dev/icons?i=vscode', alt: 'VS Code' },
-    { src: 'https://skillicons.dev/icons?i=docker', alt: 'Docker' },
     { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nixos/nixos-original.svg', alt: 'Nix' },
+    { src: 'https://skillicons.dev/icons?i=arch', alt: 'ArchLinux' },
     { src: 'https://skillicons.dev/icons?i=apple', alt: 'macOS' },
-    { src: withBase('aboutme/zorin-color.svg'), alt: 'Zorin OS' },
+    
     { src: withBase('aboutme/steamdeck-color.svg'), alt: 'Steam Deck' }
   ];
 
