@@ -60,20 +60,21 @@ function normalizeDateOnly(token: string): string {
   return `${expandYearInDatePart(m[1])}-${m[2]}-${m[3]}`;
 }
 
+const ACCOUNT_KEYS = new Set(["nattsu", "emo", "tech"]);
+
+function isAccountKey(s: string): boolean {
+  return ACCOUNT_KEYS.has(s.toLowerCase());
+}
+
 /**
- * 命名ファイルの id: 日付 + 通し（末尾）+ 先頭表示順
- * - 通し > 1 → `2026-04-27-2`（同一日内 N 番目）
- * - 通し = 1 かつ 表示順 = 1 → 初投稿は `2026-04-27` のみ
- * - 通し = 1 かつ 表示順 > 1 → `2026-04-27-2` のように先頭番号で区別
- *   （引用付きで末尾が毎回 `_1` になる運用向け）
+ * フォルダの日付 + 先頭表示順 だけで id
+ * 表示順 1 → `2026-04-27`、2 以上 → `2026-04-27-2` 形式
  */
-function idFromNamedParts(dateToken: string, orderStr: string, seqStr: string): string {
-  const d = normalizeDateOnly(dateToken);
-  const order = parseInt(orderStr, 10) || 1;
-  const seq = parseInt(seqStr, 10) || 1;
-  if (seq > 1) return `${d}-${seq}`;
-  if (order <= 1) return d;
-  return `${d}-${order}`;
+function idFromFolderDateAndOrder(folderDate: string, orderNum: number): string {
+  const d = normalizeDateOnly(folderDate);
+  const n = orderNum || 1;
+  if (n <= 1) return d;
+  return `${d}-${n}`;
 }
 
 /**
@@ -89,35 +90,39 @@ function normalizeQuoteIdToken(quote: string): string {
   return `${d}-${m[2]}`;
 }
 
-/** 例: 1_nattsu_26-04-27_2.md / 1_emo_2026-04-27_26-04-27_2.md */
-const NAMED_BARE = /^(\d+)_(nattsu|emo|tech)_((?:\d{2}|\d{4})-\d{2}-\d{2})_(\d+)$/i;
-const NAMED_QUOTED =
-  /^(\d+)_(nattsu|emo|tech)_((?:(?:\d{2}|\d{4})-\d{2}-\d{2})(?:-\d+)?)_((?:\d{2}|\d{4})-\d{2}-\d{2})_(\d+)$/i;
-
+/**
+ * `表示順_アカウント` / `表示順_アカウント_引用先id`（日付はフォルダ名のみ）
+ */
 function parseFilenameMeta(
   filePath: string,
   basename: string
 ): { id: string; account: string; date: string; quoteTo?: string; order: number } | null {
-  const mQ = basename.match(NAMED_QUOTED);
-  if (mQ) {
-    const order = parseInt(mQ[1], 10) || 0;
-    const account = mQ[2].toLowerCase();
-    const quoteTo = normalizeQuoteIdToken(mQ[3]);
-    const id = idFromNamedParts(mQ[4], mQ[1], mQ[5]);
-    return {
-      id,
-      account,
-      date: normalizeDateOnly(mQ[4]),
-      quoteTo: quoteTo || undefined,
-      order,
-    };
-  }
-  const mB = basename.match(NAMED_BARE);
-  if (mB) {
-    const order = parseInt(mB[1], 10) || 0;
-    const account = mB[2].toLowerCase();
-    const id = idFromNamedParts(mB[3], mB[1], mB[4]);
-    return { id, account, date: normalizeDateOnly(mB[3]), order };
+  const folderDate = inferDateFromFilePath(filePath);
+  if (folderDate) {
+    const parts = basename.split("_");
+    if (parts.length === 2) {
+      const order = parseInt(parts[0] ?? "", 10);
+      if (Number.isFinite(order) && isAccountKey(parts[1] ?? "")) {
+        return {
+          id: idFromFolderDateAndOrder(folderDate, order),
+          account: (parts[1] ?? "").toLowerCase(),
+          date: folderDate,
+          order,
+        };
+      }
+    }
+    if (parts.length === 3) {
+      const order = parseInt(parts[0] ?? "", 10);
+      if (Number.isFinite(order) && isAccountKey(parts[1] ?? "")) {
+        return {
+          id: idFromFolderDateAndOrder(folderDate, order),
+          account: (parts[1] ?? "").toLowerCase(),
+          date: folderDate,
+          quoteTo: normalizeQuoteIdToken(parts[2] ?? ""),
+          order,
+        };
+      }
+    }
   }
   return null;
 }
