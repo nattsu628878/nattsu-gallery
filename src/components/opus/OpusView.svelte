@@ -7,7 +7,6 @@
     title?: string;
     type?: string;
     date?: string;
-    tags?: string[];
     url?: string;
     thumbnail?: string;
     assets?: {
@@ -21,7 +20,6 @@
 
   const VIEWS = ['grid', 'table'] as const;
   type ViewType = (typeof VIEWS)[number];
-  type TriState = 'include' | 'exclude' | 'off';
   const base = import.meta.env.BASE_URL;
   const withBase = (path: string) => `${base}${path.replace(/^\/+/, '')}`;
   const resolveSitePath = (path?: string) => {
@@ -33,7 +31,6 @@
 
   let currentView: ViewType = 'grid';
   let sortOrder: 'asc' | 'desc' = 'asc';
-  let tagFilterStates: Record<string, TriState> = {};
   let showMovie = true;
   let showPicture = true;
   let showHeaderOptions = false;
@@ -83,27 +80,7 @@
     return true;
   });
 
-  $: allTags = Array.from(
-    new Set(filteredByType.flatMap((item) => (Array.isArray(item.tags) ? item.tags : [])))
-  ).sort((a, b) => a.localeCompare(b));
-  $: {
-    const next: Record<string, TriState> = {};
-    for (const tag of allTags) next[tag] = tagFilterStates[tag] ?? 'off';
-    tagFilterStates = next;
-  }
-  $: includedTags = allTags.filter((tag) => tagFilterStates[tag] === 'include');
-  $: excludedTags = allTags.filter((tag) => tagFilterStates[tag] === 'exclude');
-  $: isTagAllOn = includedTags.length === 0 && excludedTags.length === 0;
-
-  $: filteredByTag = [...filteredByType].filter((item) => {
-    if (isTagAllOn) return true;
-    const itemTags = item.tags ?? [];
-    if (includedTags.length > 0 && !includedTags.some((tag) => itemTags.includes(tag))) return false;
-    if (excludedTags.some((tag) => itemTags.includes(tag))) return false;
-    return true;
-  });
-
-  $: sortedItems = [...filteredByTag].sort((a, b) => {
+  $: sortedItems = [...filteredByType].sort((a, b) => {
     const da = a.date ?? '';
     const db = b.date ?? '';
     const cmp = da.localeCompare(db);
@@ -201,19 +178,6 @@
     window.location.href = withBase(href);
   };
 
-  function cycleTagState(tag: string) {
-    const current = tagFilterStates[tag] ?? 'off';
-    const next: TriState =
-      current === 'off' ? 'include' : current === 'include' ? 'exclude' : 'off';
-    tagFilterStates = { ...tagFilterStates, [tag]: next };
-  }
-
-  function resetTagFilters() {
-    const next: Record<string, TriState> = {};
-    for (const tag of allTags) next[tag] = 'off';
-    tagFilterStates = next;
-  }
-
 </script>
 
 <div class="container">
@@ -268,29 +232,6 @@
                     aria-pressed={sortOrder === 'desc'}
                   >Date (rev)</button>
                 </div>
-                <div class="setting-item type-filter-group">
-                  <span class="type-filter-label">Tag</span>
-                  <button
-                    type="button"
-                    class={`filter-toggle ${isTagAllOn ? 'filter-toggle--on' : 'filter-toggle--off'}`}
-                    on:click={resetTagFilters}
-                    aria-pressed={isTagAllOn}
-                  >ALL</button>
-                  {#each allTags as tag}
-                    <button
-                      type="button"
-                      class={`filter-toggle ${
-                        tagFilterStates[tag] === 'include'
-                          ? 'filter-toggle--on'
-                          : tagFilterStates[tag] === 'exclude'
-                            ? 'filter-toggle--exclude'
-                            : 'filter-toggle--off'
-                      }`}
-                      on:click={() => cycleTagState(tag)}
-                      aria-pressed={tagFilterStates[tag] !== 'off'}
-                    >{tag}</button>
-                  {/each}
-                </div>
               </div>
             {/if}
             <div class="view-toggle">
@@ -341,7 +282,6 @@
                 <th>Title</th>
                 <th>Type</th>
                 <th>Date</th>
-                <th>Tags</th>
               </tr>
             </thead>
             <tbody>
@@ -356,17 +296,6 @@
                   <td class="table-title">{item.title || item.id}</td>
                   <td class="table-type">{item.type || '-'}</td>
                   <td class="table-date">{item.date || '-'}</td>
-                  <td>
-                    <div class="table-tags">
-                      {#if item.tags && item.tags.length > 0}
-                        {#each [...item.tags].sort((a, b) => a.localeCompare(b)) as tag}
-                          <span class="table-tag">{tag}</span>
-                        {/each}
-                      {:else}
-                        -
-                      {/if}
-                    </div>
-                  </td>
                 </tr>
               {/each}
             </tbody>

@@ -3,7 +3,6 @@ export type OpusItem = {
   title?: string;
   type?: string;
   date?: string;
-  tags?: string[];
   url?: string;
   thumbnail?: string;
   assets?: {
@@ -54,12 +53,6 @@ function parseFrontmatter(raw: string) {
   return { meta, body };
 }
 
-function parseTags(value?: string) {
-  if (!value) return undefined;
-  const tags = value.split(",").map((tag) => tag.trim()).filter(Boolean);
-  return tags.length ? tags : undefined;
-}
-
 function ensureId(filePath: string, frontmatterId?: string) {
   const fallback = filePath.replace(/\\/g, "/").split("/").pop()?.replace(/\.md$/i, "") ?? "";
   return String(frontmatterId || fallback).trim().replace(/[^a-zA-Z0-9_-]/g, "-");
@@ -92,30 +85,24 @@ function extractYouTubeLinks(raw: string, filePath: string): OpusItem[] {
         });
         continue;
       }
-      // header がない場合は `id | title | url` を既定として扱う
-      headerMap = { id: 0, title: 1, url: 2, date: 3, tags: 4 };
+      // header がない場合は `id | title | url | date` を既定として扱う
+      headerMap = { id: 0, title: 1, url: 2, date: 3 };
     }
 
     const idRaw = columns[headerMap.id ?? 0];
     const titleRaw = columns[headerMap.title ?? 1];
     const urlRaw = columns[headerMap.url ?? 2];
     const dateRaw = columns[headerMap.date ?? 3];
-    const tagsRaw = columns[headerMap.tags ?? 4];
     const id = String(idRaw || "").trim().replace(/[^a-zA-Z0-9_-]/g, "-");
     const url = String(urlRaw || "").trim();
     if (!id || !url) continue;
     idx += 1;
-    const tags = String(tagsRaw || "")
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter(Boolean);
     items.push({
       id,
       title: String(titleRaw || "").trim() || `YouTube ${idx}`,
       type: "movie",
       date: String(dateRaw || "").trim() || inferDateFromId(id) || undefined,
       url,
-      tags: tags.length > 0 ? tags : undefined,
       thumbnail: id,
     });
   }
@@ -156,7 +143,14 @@ export function parseOpusMarkdownFiles(
       const normalizedLinks = links.map((item) => ({
           ...item,
           id: item.id.trim(),
-          thumbnail: resolveAssetUrl(assetMap, item.thumbnail) || item.thumbnail,
+          ...(() => {
+            const resolved = resolveAssetUrl(assetMap, item.thumbnail);
+            const fallback = item.thumbnail?.trim();
+            const isUnresolvedId = !resolved || (fallback && resolved === fallback);
+            return {
+              thumbnail: isUnresolvedId ? undefined : resolved,
+            };
+          })(),
         }));
       for (const item of normalizedLinks) {
         if (!item.id || usedIds.has(item.id)) continue;
@@ -174,7 +168,6 @@ export function parseOpusMarkdownFiles(
       title: meta.title?.trim() || undefined,
       type: meta.type?.trim() || undefined,
       date: meta.date?.trim() || undefined,
-      tags: parseTags(meta.tags),
       url: resolveAssetUrl(assetMap, meta.url?.trim()) || meta.url?.trim() || undefined,
       thumbnail: resolveAssetUrl(assetMap, meta.thumbnail?.trim()) || meta.thumbnail?.trim() || undefined,
     };
