@@ -10,14 +10,14 @@ import {
 
 const base = import.meta.env.BASE_URL;
 const withBase = (path: string) => toBasePath(base, path);
-const MARKDOWN_ROOT = '/src/data/article/markdown/';
+const MARKDOWN_ROOT = '/src/data/article/content/';
 
-const markdownModules = import.meta.glob('../../data/article/markdown/**/*.md', {
+const markdownModules = import.meta.glob('../../data/article/content/**/*.md', {
   query: '?raw',
   import: 'default',
   eager: true
 }) as Record<string, string>;
-const assetModules = import.meta.glob('../../data/article/markdown/data/**/*', {
+const assetModules = import.meta.glob('../../data/article/content/data/**/*', {
   query: '?url',
   import: 'default',
   eager: true

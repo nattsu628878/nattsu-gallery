@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-ASSET_DIR="$ROOT/src/data/article/markdown/data"
+ASSET_DIR="$ROOT/src/data/article/content/data"
 VIDEO_WEBM_MAX_SIDE="${VIDEO_WEBM_MAX_SIDE:-1280}"
 
 # 進捗は stderr のみ（バー + 改行）。数値は整数のみ（bash 3.2 互換）
@@ -255,7 +255,7 @@ import re
 import sys
 
 root = Path(os.environ["ROOT_PATH"])
-md_dir = root / "src" / "data" / "article" / "markdown"
+md_dir = root / "src" / "data" / "article" / "content"
 asset_dir = md_dir / "data"
 
 replacements = {}

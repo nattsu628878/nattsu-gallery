@@ -45,7 +45,7 @@ id | title | url | date
 ```
 
 - 動画の必要メタデータは `id`, `title`, `url`（`date` は任意。未指定時は `id` から推定）
-- 画像は md 不要（`opus/data/` に `id` と同名ファイルを置くだけ）
+- 画像は md 不要（`opus/content/data/` に `id` と同名ファイルを置くだけ）
 - 画像の `type` は自動で `picture`
 - 画像の `date` は `id` から自動取得
   - 例: `26-04-01.webp` → `date: 26-04-01`

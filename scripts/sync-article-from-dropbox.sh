@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# ~/Library/CloudStorage/Dropbox/_md の中身を src/data/article/markdown にコピーするだけ
+# ~/Library/CloudStorage/Dropbox/_md の中身を src/data/article/content にコピーするだけ
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="$HOME/Library/CloudStorage/Dropbox/_md"
-DEST="$ROOT/src/data/article/markdown"
+DEST="$ROOT/src/data/article/content"
 
 if [ ! -d "$SRC" ]; then
   echo "not found: $SRC" >&2

@@ -186,10 +186,10 @@ def main() -> int:
         timeline_candidates = build_candidate_paths(timeline_path, "timeline")
 
         repo_root = Path(__file__).resolve().parent.parent
-        article_target = repo_root / "src" / "data" / "article" / "markdown"
-        opus_markdown_target = repo_root / "src" / "data" / "opus" / "markdown"
-        opus_assets_target = repo_root / "src" / "data" / "opus" / "markdown" / "data"
-        timeline_markdown_target = repo_root / "src" / "data" / "timeline" / "markdown"
+        article_target = repo_root / "src" / "data" / "article" / "content"
+        opus_markdown_target = repo_root / "src" / "data" / "opus" / "content"
+        opus_assets_target = repo_root / "src" / "data" / "opus" / "content" / "data"
+        timeline_markdown_target = repo_root / "src" / "data" / "timeline" / "content"
         timeline_assets_target = repo_root / "public" / "timeline"
 
         with tempfile.TemporaryDirectory(prefix="dropbox-sync-") as tmp:
