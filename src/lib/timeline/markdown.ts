@@ -61,14 +61,19 @@ function normalizeDateOnly(token: string): string {
 }
 
 /**
- * ファイル名の日付+通し（同一日内の何番目）から canonical id
- * 1番目だけ `2026-04-27`、2番目以降 `2026-04-27-2`
+ * 命名ファイルの id: 日付 + 通し（末尾）+ 先頭表示順
+ * - 通し > 1 → `2026-04-27-2`（同一日内 N 番目）
+ * - 通し = 1 かつ 表示順 = 1 → 初投稿は `2026-04-27` のみ
+ * - 通し = 1 かつ 表示順 > 1 → `2026-04-27-2` のように先頭番号で区別
+ *   （引用付きで末尾が毎回 `_1` になる運用向け）
  */
-function idFromDateAndSeq(dateToken: string, seqStr: string): string {
+function idFromNamedParts(dateToken: string, orderStr: string, seqStr: string): string {
   const d = normalizeDateOnly(dateToken);
+  const order = parseInt(orderStr, 10) || 1;
   const seq = parseInt(seqStr, 10) || 1;
-  if (seq <= 1) return d;
-  return `${d}-${seq}`;
+  if (seq > 1) return `${d}-${seq}`;
+  if (order <= 1) return d;
+  return `${d}-${order}`;
 }
 
 /**
@@ -98,7 +103,7 @@ function parseFilenameMeta(
     const order = parseInt(mQ[1], 10) || 0;
     const account = mQ[2].toLowerCase();
     const quoteTo = normalizeQuoteIdToken(mQ[3]);
-    const id = idFromDateAndSeq(mQ[4], mQ[5]);
+    const id = idFromNamedParts(mQ[4], mQ[1], mQ[5]);
     return {
       id,
       account,
@@ -111,7 +116,7 @@ function parseFilenameMeta(
   if (mB) {
     const order = parseInt(mB[1], 10) || 0;
     const account = mB[2].toLowerCase();
-    const id = idFromDateAndSeq(mB[3], mB[4]);
+    const id = idFromNamedParts(mB[3], mB[1], mB[4]);
     return { id, account, date: normalizeDateOnly(mB[3]), order };
   }
   return null;
@@ -199,7 +204,8 @@ export function parseTimelineMarkdownFiles(
     if (byDate !== 0) return byDate;
     const oa = a.order ?? 0;
     const ob = b.order ?? 0;
-    if (oa !== ob) return oa - ob;
+    // 同日内は表示順の大きい方を上（1 が最下位）
+    if (oa !== ob) return ob - oa;
     return a.id.localeCompare(b.id);
   });
 }

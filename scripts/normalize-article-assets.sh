@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-CONTENT_DIR="$ROOT/src/data/article/content"
+CONTENT_DIR="$ROOT/src/data/article"
 VIDEO_WEBM_MAX_SIDE="${VIDEO_WEBM_MAX_SIDE:-1280}"
 
 # 進捗は stderr のみ（バー + 改行）。数値は整数のみ（bash 3.2 互換）
@@ -30,11 +30,15 @@ bar_frac() {
 }
 
 if [ ! -d "$CONTENT_DIR" ]; then
-  printf '%s\n' "skipped: content directory not found: $CONTENT_DIR" >&2
+  printf '%s\n' "skipped: article data directory not found: $CONTENT_DIR" >&2
   exit 0
 fi
 
-mapfile -t ASSET_DIRS < <(find "$CONTENT_DIR" -type d -name data | sort)
+# mapfile は bash 4+ のみ（macOS 標準の bash 3.2 では不可）
+ASSET_DIRS=()
+while IFS= read -r _dir; do
+  [ -n "$_dir" ] && ASSET_DIRS+=("$_dir")
+done < <(find "$CONTENT_DIR" -type d -name data | sort)
 if [ "${#ASSET_DIRS[@]}" -eq 0 ]; then
   printf '%s\n' "skipped: no data directories found under $CONTENT_DIR" >&2
   exit 0
@@ -269,7 +273,7 @@ import re
 import sys
 
 root = Path(os.environ["ROOT_PATH"])
-md_dir = root / "src" / "data" / "article" / "content"
+md_dir = root / "src" / "data" / "article"
 
 replacements = {}
 for p in md_dir.glob("**/data/*.webp"):

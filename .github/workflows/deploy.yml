@@ -59,13 +59,13 @@ jobs:
       - name: Verify opus assets
         run: |
           echo "Opus content files:"
-          ls -la src/data/opus/content || true
+          ls -la src/data/opus || true
           echo ""
           echo "Opus asset files:"
-          ls -la src/data/opus/content/data || true
-          count=$(ls -1 src/data/opus/content/data 2>/dev/null | wc -l | tr -d ' ')
+          ls -la src/data/opus/data || true
+          count=$(ls -1 src/data/opus/data 2>/dev/null | wc -l | tr -d ' ')
           if [ "${count:-0}" -eq 0 ]; then
-            echo "ERROR: No opus assets were synced to src/data/opus/content/data" >&2
+            echo "ERROR: No opus assets were synced to src/data/opus/data" >&2
             exit 1
           fi
 

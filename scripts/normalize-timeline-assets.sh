@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-MD_DIR="$ROOT/src/data/timeline/content"
+MD_DIR="$ROOT/src/data/timeline"
 ASSET_DIR="$MD_DIR/data"
 
 if [ ! -d "$ASSET_DIR" ]; then
@@ -55,7 +55,7 @@ import os
 import re
 
 root = Path(os.environ["ROOT_PATH"])
-md_dir = root / "src" / "data" / "timeline" / "content"
+md_dir = root / "src" / "data" / "timeline"
 asset_dir = md_dir / "data"
 
 replacements = {}
@@ -89,7 +89,7 @@ obsidian_re = re.compile(r"!\[\[([^\]|]+)(\|[^\]]+)?\]\]")
 md_img_re = re.compile(r"(!\[[^\]]*\]\()([^)]+)(\))")
 field_re = re.compile(r"^(image|video):\s*(.+?)\s*$", re.MULTILINE)
 
-for md_path in sorted(md_dir.glob("*.md")):
+for md_path in sorted(md_dir.rglob("*.md")):
     text = md_path.read_text(encoding="utf-8")
 
     def replace_obsidian(m: re.Match[str]) -> str:

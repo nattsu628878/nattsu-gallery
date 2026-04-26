@@ -117,6 +117,55 @@ def extract_zip_bytes(zip_bytes: bytes, destination: Path) -> None:
         zf.extractall(destination)
 
 
+def merge_tree_into(src: Path, dst: Path) -> None:
+    """Move all items from src into dst, merging existing directories."""
+    if not src.is_dir():
+        return
+    dst.mkdir(parents=True, exist_ok=True)
+    for item in list(src.iterdir()):
+        target = dst / item.name
+        if item.is_dir() and target.exists() and target.is_dir():
+            merge_tree_into(item, target)
+            try:
+                item.rmdir()
+            except OSError:
+                shutil.rmtree(item)
+        else:
+            if target.exists():
+                if target.is_dir():
+                    shutil.rmtree(target)
+                else:
+                    target.unlink()
+            shutil.move(str(item), str(target))
+
+
+def flatten_single_named_subdir(root: Path, name: str) -> None:
+    """Dropbox zip が 1 階だけ `article/` / `opus/` / `timeline/` で包んでいる場合に中身を root へ寄せる。"""
+    child = root / name
+    if not child.is_dir():
+        return
+    merge_tree_into(child, root)
+    shutil.rmtree(child)
+
+
+def normalize_opus_assets_nesting(assets_root: Path) -> None:
+    """`data/opus/data/*` の余分なネストを `data/` 直下へ。"""
+    nested = assets_root / "opus" / "data"
+    if not nested.is_dir():
+        return
+    merge_tree_into(nested, assets_root)
+    shutil.rmtree(assets_root / "opus")
+
+
+def normalize_timeline_assets_nesting(assets_root: Path) -> None:
+    """`data/timeline/data/*` 形式の余分なネストを解消。"""
+    nested = assets_root / "timeline" / "data"
+    if not nested.is_dir():
+        return
+    merge_tree_into(nested, assets_root)
+    shutil.rmtree(assets_root / "timeline")
+
+
 def copy_timeline_assets(extracted_root: Path, timeline_assets_dir: Path) -> int:
     timeline_assets_dir.mkdir(parents=True, exist_ok=True)
     copied = 0
@@ -194,25 +243,31 @@ def main() -> int:
         timeline_candidates = build_candidate_paths(timeline_path, "timeline")
 
         repo_root = Path(__file__).resolve().parent.parent
-        article_target = repo_root / "src" / "data" / "article" / "content"
-        opus_markdown_target = repo_root / "src" / "data" / "opus" / "content"
-        opus_assets_target = repo_root / "src" / "data" / "opus" / "content" / "data"
-        timeline_markdown_target = repo_root / "src" / "data" / "timeline" / "content"
-        timeline_assets_target = repo_root / "src" / "data" / "timeline" / "content" / "data"
+        article_target = repo_root / "src" / "data" / "article"
+        opus_markdown_target = repo_root / "src" / "data" / "opus"
+        opus_assets_target = repo_root / "src" / "data" / "opus" / "data"
+        timeline_markdown_target = repo_root / "src" / "data" / "timeline"
+        timeline_assets_target = repo_root / "src" / "data" / "timeline" / "data"
 
         with tempfile.TemporaryDirectory(prefix="dropbox-sync-") as tmp:
             tmp_dir = Path(tmp)
 
-            # Article
+            # Article（zip で余分に `content/` や `article/` が 1 段ある場合は畳む）
             article_zip, _ = download_zip_with_fallback(access_token, article_candidates, "article")
             extract_zip_bytes(article_zip, article_target)
+            flatten_single_named_subdir(article_target, "content")
+            flatten_single_named_subdir(article_target, "article")
             print(f"[dropbox] synced article markdown -> {article_target}")
 
             # Opus
             opus_extract_dir = tmp_dir / "opus"
             opus_zip, _ = download_zip_with_fallback(access_token, opus_candidates, "opus")
             extract_zip_bytes(opus_zip, opus_extract_dir)
+            flatten_single_named_subdir(opus_extract_dir, "content")
+            flatten_single_named_subdir(opus_extract_dir, "opus")
             opus_markdown_count = sync_opus_markdown(opus_extract_dir, opus_markdown_target)
+            flatten_single_named_subdir(opus_markdown_target, "content")
+            flatten_single_named_subdir(opus_markdown_target, "opus")
             if opus_markdown_count == 0:
                 print(
                     f"[dropbox] warning: no markdown files found in Dropbox opus path; "
@@ -221,13 +276,18 @@ def main() -> int:
             else:
                 print(f"[dropbox] synced opus markdown -> {opus_markdown_target} ({opus_markdown_count} files)")
             opus_assets_count = copy_opus_assets(opus_extract_dir, opus_assets_target)
+            normalize_opus_assets_nesting(opus_assets_target)
             print(f"[dropbox] synced opus assets -> {opus_assets_target} ({opus_assets_count} files)")
 
             # Timeline
             timeline_extract_dir = tmp_dir / "timeline"
             timeline_zip, _ = download_zip_with_fallback(access_token, timeline_candidates, "timeline")
             extract_zip_bytes(timeline_zip, timeline_extract_dir)
+            flatten_single_named_subdir(timeline_extract_dir, "content")
+            flatten_single_named_subdir(timeline_extract_dir, "timeline")
             markdown_count = sync_timeline_markdown(timeline_extract_dir, timeline_markdown_target)
+            flatten_single_named_subdir(timeline_markdown_target, "content")
+            flatten_single_named_subdir(timeline_markdown_target, "timeline")
             if markdown_count == 0:
                 print(
                     f"[dropbox] warning: no markdown files found in Dropbox timeline path; "
@@ -237,6 +297,7 @@ def main() -> int:
                 print(f"[dropbox] synced timeline markdown -> {timeline_markdown_target} ({markdown_count} files)")
 
             copied_assets = copy_timeline_assets(timeline_extract_dir, timeline_assets_target)
+            normalize_timeline_assets_nesting(timeline_assets_target)
             print(f"[dropbox] synced timeline assets -> {timeline_assets_target} ({copied_assets} files)")
 
         return 0

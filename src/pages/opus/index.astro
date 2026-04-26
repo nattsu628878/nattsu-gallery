@@ -3,12 +3,12 @@ import OpusView from '../../components/opus/OpusView.svelte';
 import '../../styles/pages/opus.css';
 import { parseOpusMarkdownFiles, type OpusAssetEntry } from '../../lib/opus/markdown';
 
-const markdownModules = import.meta.glob('../../data/opus/content/**/*.md', {
+const markdownModules = import.meta.glob('../../data/opus/**/*.md', {
   query: '?raw',
   import: 'default',
   eager: true
 }) as Record<string, string>;
-const assetModules = import.meta.glob('../../data/opus/content/data/**/*', {
+const assetModules = import.meta.glob('../../data/opus/data/**/*', {
   query: '?url',
   import: 'default',
   eager: true
@@ -18,7 +18,7 @@ const assetMap = new Map<string, string>();
 const assetEntries: OpusAssetEntry[] = [];
 Object.entries(assetModules).forEach(([filePath, url]) => {
   const normalized = filePath.replace(/\\/g, '/');
-  const marker = '/src/data/opus/content/data/';
+  const marker = '/src/data/opus/data/';
   const rel = normalized.includes(marker)
     ? normalized.split(marker)[1]
     : normalized.split('/').slice(-1)[0];

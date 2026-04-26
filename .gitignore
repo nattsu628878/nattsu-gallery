@@ -9,6 +9,6 @@ __pycache__/
 .env.*
 
 # Dropbox 同期データ（本文の正本は Dropbox 側）
-src/data/article/content/
-src/data/opus/content/
-src/data/timeline/content/
+src/data/article/
+src/data/opus/
+src/data/timeline/

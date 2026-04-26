@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-MD_DIR="$ROOT/src/data/opus/content"
+MD_DIR="$ROOT/src/data/opus"
 ASSET_DIR="$MD_DIR/data"
 
 if [ ! -d "$ASSET_DIR" ]; then
@@ -38,7 +38,7 @@ import os
 import re
 
 root = Path(os.environ["ROOT_PATH"])
-md_dir = root / "src" / "data" / "opus" / "content"
+md_dir = root / "src" / "data" / "opus"
 asset_dir = md_dir / "data"
 
 replacements: dict[str, str] = {}

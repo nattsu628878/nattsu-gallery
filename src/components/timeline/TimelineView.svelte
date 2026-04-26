@@ -90,7 +90,14 @@
     if (excludedAccounts.includes(account)) return false;
     return true;
   });
-  $: timelineItems = [...filteredItems].sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''));
+  $: timelineItems = [...filteredItems].sort((a, b) => {
+    const c = (b.date ?? '').localeCompare(a.date ?? '');
+    if (c !== 0) return c;
+    const oa = a.order ?? 0;
+    const ob = b.order ?? 0;
+    if (oa !== ob) return ob - oa;
+    return a.id.localeCompare(b.id);
+  });
   $: timelineItemMap = new Map(items.map((item) => [item.id, item] as const));
 
   const cycleAccountState = (account: string) => {
