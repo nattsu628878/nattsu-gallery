@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-ASSET_DIR="$ROOT/src/data/article/content/data"
+CONTENT_DIR="$ROOT/src/data/article/content"
 VIDEO_WEBM_MAX_SIDE="${VIDEO_WEBM_MAX_SIDE:-1280}"
 
 # 進捗は stderr のみ（バー + 改行）。数値は整数のみ（bash 3.2 互換）
@@ -29,8 +29,14 @@ bar_frac() {
   bar_pct "$pct" "$width"
 }
 
-if [ ! -d "$ASSET_DIR" ]; then
-  printf '%s\n' "skipped: asset directory not found: $ASSET_DIR" >&2
+if [ ! -d "$CONTENT_DIR" ]; then
+  printf '%s\n' "skipped: content directory not found: $CONTENT_DIR" >&2
+  exit 0
+fi
+
+mapfile -t ASSET_DIRS < <(find "$CONTENT_DIR" -type d -name data | sort)
+if [ "${#ASSET_DIRS[@]}" -eq 0 ]; then
+  printf '%s\n' "skipped: no data directories found under $CONTENT_DIR" >&2
   exit 0
 fi
 
@@ -46,44 +52,50 @@ if ! command -v ffmpeg >/dev/null 2>&1; then
 fi
 
 image_total=0
-for src in "$ASSET_DIR"/*; do
-  [ -f "$src" ] || continue
-  n="$(basename "$src")"
-  lw="$(printf '%s' "$n" | tr '[:upper:]' '[:lower:]')"
-  case "$lw" in
-    *.png|*.jpg|*.jpeg) image_total=$((image_total + 1)) ;;
-  esac
+for ASSET_DIR in "${ASSET_DIRS[@]}"; do
+  for src in "$ASSET_DIR"/*; do
+    [ -f "$src" ] || continue
+    n="$(basename "$src")"
+    lw="$(printf '%s' "$n" | tr '[:upper:]' '[:lower:]')"
+    case "$lw" in
+      *.png|*.jpg|*.jpeg) image_total=$((image_total + 1)) ;;
+    esac
+  done
 done
 
 video_total=0
-for src in "$ASSET_DIR"/*; do
-  [ -f "$src" ] || continue
-  n="$(basename "$src")"
-  lw="$(printf '%s' "$n" | tr '[:upper:]' '[:lower:]')"
-  case "$lw" in
-    *.mov|*.mp4) video_total=$((video_total + 1)) ;;
-  esac
+for ASSET_DIR in "${ASSET_DIRS[@]}"; do
+  for src in "$ASSET_DIR"/*; do
+    [ -f "$src" ] || continue
+    n="$(basename "$src")"
+    lw="$(printf '%s' "$n" | tr '[:upper:]' '[:lower:]')"
+    case "$lw" in
+      *.mov|*.mp4) video_total=$((video_total + 1)) ;;
+    esac
+  done
 done
 
 if [ "$has_cwebp" -eq 1 ]; then
   image_i=0
-  for src in "$ASSET_DIR"/*; do
-    [ -f "$src" ] || continue
-    name="$(basename "$src")"
-    lower="$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]')"
-    case "$lower" in
-      *.png|*.jpg|*.jpeg)
-        image_i=$((image_i + 1))
-        dst="${src%.*}.webp"
-        if [ ! -f "$dst" ] || [ "$src" -nt "$dst" ]; then
-          cwebp -quiet -q 82 "$src" -o "$dst"
-        fi
-        if [ -f "$dst" ]; then
-          rm -f "$src"
-        fi
-        printf '\r画像 WebP  %s %d/%d' "$(bar_frac "${image_i}" "${image_total}")" "${image_i}" "${image_total}" >&2
-        ;;
-    esac
+  for ASSET_DIR in "${ASSET_DIRS[@]}"; do
+    for src in "$ASSET_DIR"/*; do
+      [ -f "$src" ] || continue
+      name="$(basename "$src")"
+      lower="$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]')"
+      case "$lower" in
+        *.png|*.jpg|*.jpeg)
+          image_i=$((image_i + 1))
+          dst="${src%.*}.webp"
+          if [ ! -f "$dst" ] || [ "$src" -nt "$dst" ]; then
+            cwebp -quiet -q 82 "$src" -o "$dst"
+          fi
+          if [ -f "$dst" ]; then
+            rm -f "$src"
+          fi
+          printf '\r画像 WebP  %s %d/%d' "$(bar_frac "${image_i}" "${image_total}")" "${image_i}" "${image_total}" >&2
+          ;;
+      esac
+    done
   done
   if [ "${image_total}" -eq 0 ]; then
     printf '\r画像 WebP  %s 0/0\n' "$(bar_pct 0)" >&2
@@ -96,18 +108,19 @@ fi
 
 if [ "$has_ffmpeg" -eq 1 ]; then
   video_i=0
-  for src in "$ASSET_DIR"/*; do
-    [ -f "$src" ] || continue
-    name="$(basename "$src")"
-    lower="$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]')"
-    case "$lower" in
-      *.mov|*.mp4)
-        video_i=$((video_i + 1))
-        dst="${src%.*}.webm"
-        if [ ! -f "$dst" ] || [ "$src" -nt "$dst" ]; then
-          vf="scale=w='min(${VIDEO_WEBM_MAX_SIDE},iw)':h='min(${VIDEO_WEBM_MAX_SIDE},ih)':force_original_aspect_ratio=decrease,fps=30,format=yuv420p"
-          export SOURCE_MEDIA="$src" DEST_WEBM="$dst" FILTER_VF="$vf"
-          python3 - <<'PY'
+  for ASSET_DIR in "${ASSET_DIRS[@]}"; do
+    for src in "$ASSET_DIR"/*; do
+      [ -f "$src" ] || continue
+      name="$(basename "$src")"
+      lower="$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]')"
+      case "$lower" in
+        *.mov|*.mp4)
+          video_i=$((video_i + 1))
+          dst="${src%.*}.webm"
+          if [ ! -f "$dst" ] || [ "$src" -nt "$dst" ]; then
+            vf="scale=w='min(${VIDEO_WEBM_MAX_SIDE},iw)':h='min(${VIDEO_WEBM_MAX_SIDE},ih)':force_original_aspect_ratio=decrease,fps=30,format=yuv420p"
+            export SOURCE_MEDIA="$src" DEST_WEBM="$dst" FILTER_VF="$vf"
+            python3 - <<'PY'
 import math
 import os
 import re
@@ -232,14 +245,15 @@ if rc != 0:
     sys.stderr.write("".join(buf[-40:]))
     sys.exit(rc)
 PY
-        else
-          printf '\r動画 WebM  %s %d/%d スキップ\n' "$(bar_pct 0)" "${video_i}" "${video_total}" >&2
-        fi
-        if [ -f "$dst" ]; then
-          rm -f "$src"
-        fi
-        ;;
-    esac
+          else
+            printf '\r動画 WebM  %s %d/%d スキップ\n' "$(bar_pct 0)" "${video_i}" "${video_total}" >&2
+          fi
+          if [ -f "$dst" ]; then
+            rm -f "$src"
+          fi
+          ;;
+      esac
+    done
   done
   if [ "${video_total}" -eq 0 ]; then
     printf '\r動画 WebM  %s 0/0\n' "$(bar_pct 0)" >&2
@@ -256,15 +270,14 @@ import sys
 
 root = Path(os.environ["ROOT_PATH"])
 md_dir = root / "src" / "data" / "article" / "content"
-asset_dir = md_dir / "data"
 
 replacements = {}
-for p in asset_dir.glob("*.webp"):
+for p in md_dir.glob("**/data/*.webp"):
     stem = p.stem
     replacements[f"{stem}.png"] = p.name
     replacements[f"{stem}.jpg"] = p.name
     replacements[f"{stem}.jpeg"] = p.name
-for p in asset_dir.glob("*.webm"):
+for p in md_dir.glob("**/data/*.webm"):
     stem = p.stem
     replacements[f"{stem}.mov"] = p.name
     replacements[f"{stem}.mp4"] = p.name
@@ -329,7 +342,7 @@ def bar_frac(cur: int, total: int, w: int = 28) -> str:
     return "[" + "=" * n + "-" * (w - n) + "]"
 
 
-md_paths = sorted(md_dir.glob("*.md"))
+md_paths = sorted(md_dir.glob("**/*.md"))
 md_total = len(md_paths)
 changed = 0
 for idx, md_path in enumerate(md_paths, start=1):

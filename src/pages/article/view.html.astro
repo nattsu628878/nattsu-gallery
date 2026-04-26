@@ -17,7 +17,7 @@ const markdownModules = import.meta.glob('../../data/article/content/**/*.md', {
   import: 'default',
   eager: true
 }) as Record<string, string>;
-const assetModules = import.meta.glob('../../data/article/content/data/**/*', {
+const assetModules = import.meta.glob('../../data/article/content/**/data/**/*', {
   query: '?url',
   import: 'default',
   eager: true
