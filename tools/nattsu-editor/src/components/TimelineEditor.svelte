@@ -18,7 +18,11 @@
     while (used.has(`${baseId}-${index}`)) index += 1;
     return `${baseId}-${index}`;
   };
-  const ACCOUNT_OPTIONS = ['nattsu', 'nattsu2', 'nattsu3'] as const;
+  const ACCOUNT_OPTIONS = [
+    { value: 'nattsu', label: 'natʇsu' },
+    { value: 'emo', label: '翠懐' },
+    { value: 'tech', label: 'halcyon::詞音' }
+  ] as const;
 
   let items: TimelineItem[] = [];
   let selectedId = '';
@@ -245,7 +249,7 @@
     <div class="grid">
       <label class="field-label" for="te-id">ID</label><input id="te-id" class="field-input" bind:value={id} />
       <label class="field-label" for="te-date">Date</label><input id="te-date" class="field-input" type="date" value={date} on:input={(event) => onDateChangeForNewItem((event.currentTarget as HTMLInputElement).value)} />
-      <label class="field-label" for="te-account">Account</label><div id="te-account" class="toggle-group">{#each ACCOUNT_OPTIONS as itemAccount}<button type="button" class={`toggle-btn ${account === itemAccount ? 'is-on' : ''}`} on:click={() => (account = itemAccount)}>{itemAccount}</button>{/each}</div>
+      <label class="field-label" for="te-account">Account</label><div id="te-account" class="toggle-group">{#each ACCOUNT_OPTIONS as itemAccount}<button type="button" class={`toggle-btn ${account === itemAccount.value ? 'is-on' : ''}`} on:click={() => (account = itemAccount.value)}>{itemAccount.label}</button>{/each}</div>
       <label class="field-label" for="te-content">Content</label><textarea id="te-content" class="field-input field-textarea" bind:value={content}></textarea>
       <label class="field-label" for="te-image">Image</label><input id="te-image" class="field-file" type="file" accept="image/*" bind:this={imageInput} on:change={onPickImage} />
       <label class="field-label" for="te-video">Video</label><input id="te-video" class="field-file" type="file" accept="video/*" bind:this={videoInput} on:change={onPickVideo} />

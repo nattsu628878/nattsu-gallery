@@ -20,10 +20,10 @@
     ((import.meta as ImportMeta & { env?: { BASE_URL?: string } }).env?.BASE_URL ?? '/');
   const withBase = (path: string) => `${base}${path.replace(/^\/+/, '')}`;
   const modeRoutes = ['opus/?view=grid', 'article/', 'timeline/', 'aboutme/'] as const;
-  const accountAvatars: Record<string, string> = {
-    nattsu: withBase('aboutme/nattsu_real.webp'),
-    'nattsu-sub': withBase('aboutme/nattsu_320_320_tt.webp'),
-    'nattsu-photo': withBase('aboutme/steamdeck-color.svg')
+  const accountProfiles: Record<string, { label: string; avatar: string }> = {
+    nattsu: { label: 'natʇsu', avatar: withBase('timeline/nattsu_320_320_tt.webp') },
+    emo: { label: '翠懐', avatar: withBase('timeline/emo.webp') },
+    tech: { label: 'halcyon::詞音', avatar: withBase('timeline/tech.webp') }
   };
   let accountFilterStates: Record<string, TriState> = {};
   let showHeaderOptions = false;
@@ -40,7 +40,11 @@
 
   const getAccountAvatar = (account?: string) => {
     const key = account || 'nattsu';
-    return accountAvatars[key] || accountAvatars.nattsu;
+    return accountProfiles[key]?.avatar || accountProfiles.nattsu.avatar;
+  };
+  const getAccountLabel = (account?: string) => {
+    const key = account || 'nattsu';
+    return accountProfiles[key]?.label || key;
   };
 
   onMount(() => {
@@ -63,9 +67,10 @@
     return () => window.removeEventListener('keydown', onKeyDown);
   });
 
-  $: allAccounts = Array.from(
-    new Set(items.map((item) => item.account || 'nattsu'))
-  ).sort((a, b) => a.localeCompare(b));
+  $: allAccounts = ['nattsu', 'emo', 'tech'].filter((account) =>
+    items.some((item) => (item.account || 'nattsu') === account)
+  );
+  $: if (allAccounts.length === 0) allAccounts = ['nattsu', 'emo', 'tech'];
   $: {
     const next: Record<string, TriState> = {};
     for (const account of allAccounts) next[account] = accountFilterStates[account] ?? 'off';
@@ -137,7 +142,7 @@
                 on:click={() => cycleAccountState(account)}
                 aria-pressed={accountFilterStates[account] !== 'off'}
               >
-                {account}
+                {getAccountLabel(account)}
               </button>
             {/each}
           </div>
@@ -157,7 +162,7 @@
               <img class="timeline-avatar" src={getAccountAvatar(item.account)} width="44" height="44" alt="プロフィール画像" />
               <div class="timeline-body">
                 <div class="timeline-meta">
-                  <span class="timeline-name">{item.account || 'nattsu'}</span>
+                  <span class="timeline-name">{getAccountLabel(item.account)}</span>
                   <span class="timeline-date">{item.date || '-'}</span>
                 </div>
                 <p class="timeline-content">{item.content || ''}</p>
