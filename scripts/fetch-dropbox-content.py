@@ -60,6 +60,56 @@ def download_zip(access_token: str, dropbox_path: str) -> bytes:
         raise RuntimeError(f"Dropbox download_zip failed for {dropbox_path}: {exc.code} {body}") from exc
 
 
+def normalize_dropbox_path(path_value: str) -> str:
+    value = (path_value or "").strip()
+    if not value:
+        return ""
+    if not value.startswith("/"):
+        value = f"/{value}"
+    return value
+
+
+def unique_paths(paths: list[str]) -> list[str]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for raw in paths:
+        normalized = normalize_dropbox_path(raw)
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        result.append(normalized)
+    return result
+
+
+def build_candidate_paths(primary_path: str, kind: str) -> list[str]:
+    defaults = {
+        "article": ["/nattsu-gallery/article", "/article", "/_md/article"],
+        "timeline": ["/nattsu-gallery/timeline", "/timeline", "/_md/timeline"],
+    }
+    base = normalize_dropbox_path(primary_path)
+    derived: list[str] = []
+    if base.startswith("/nattsu-gallery/"):
+        derived.append(base.replace("/nattsu-gallery", "", 1))
+    if base.startswith("/_md/"):
+        derived.append(base.replace("/_md", "", 1))
+    return unique_paths([base, *derived, *defaults.get(kind, [])])
+
+
+def download_zip_with_fallback(access_token: str, candidate_paths: list[str], kind: str) -> tuple[bytes, str]:
+    errors: list[str] = []
+    for path_candidate in candidate_paths:
+        try:
+            data = download_zip(access_token, path_candidate)
+            print(f"[dropbox] resolved {kind} path: {path_candidate}")
+            return data, path_candidate
+        except RuntimeError as exc:
+            errors.append(str(exc))
+    raise RuntimeError(
+        f"Failed to resolve Dropbox {kind} path. Tried: {', '.join(candidate_paths)}\n"
+        f"{errors[-1] if errors else ''}"
+    )
+
+
 def extract_zip_bytes(zip_bytes: bytes, destination: Path) -> None:
     ensure_clean_dir(destination)
     with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
@@ -94,6 +144,8 @@ def main() -> int:
         access_token = require_env("DROPBOX_ACCESS_TOKEN")
         article_path = os.environ.get("DROPBOX_ARTICLE_PATH", "/nattsu-gallery/article").strip() or "/nattsu-gallery/article"
         timeline_path = os.environ.get("DROPBOX_TIMELINE_PATH", "/nattsu-gallery/timeline").strip() or "/nattsu-gallery/timeline"
+        article_candidates = build_candidate_paths(article_path, "article")
+        timeline_candidates = build_candidate_paths(timeline_path, "timeline")
 
         repo_root = Path(__file__).resolve().parent.parent
         article_target = repo_root / "src" / "data" / "article" / "markdown"
@@ -104,13 +156,13 @@ def main() -> int:
             tmp_dir = Path(tmp)
 
             # Article
-            article_zip = download_zip(access_token, article_path)
+            article_zip, _ = download_zip_with_fallback(access_token, article_candidates, "article")
             extract_zip_bytes(article_zip, article_target)
             print(f"[dropbox] synced article markdown -> {article_target}")
 
             # Timeline
             timeline_extract_dir = tmp_dir / "timeline"
-            timeline_zip = download_zip(access_token, timeline_path)
+            timeline_zip, _ = download_zip_with_fallback(access_token, timeline_candidates, "timeline")
             extract_zip_bytes(timeline_zip, timeline_extract_dir)
 
             items_source = find_first_file(timeline_extract_dir, "items.json")
