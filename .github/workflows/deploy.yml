@@ -39,13 +39,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Fetch article/timeline from Dropbox
+      - name: Fetch article/opus/timeline from Dropbox
         env:
           DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
           DROPBOX_ARTICLE_PATH: ${{ secrets.DROPBOX_ARTICLE_PATH }}
           DROPBOX_OPUS_PATH: ${{ secrets.DROPBOX_OPUS_PATH }}
           DROPBOX_TIMELINE_PATH: ${{ secrets.DROPBOX_TIMELINE_PATH }}
         run: python3 scripts/fetch-dropbox-content.py
+
+      - name: Normalize opus assets to webp
+        run: bash scripts/normalize-opus-assets.sh
 
       - name: Build
         run: npm run build

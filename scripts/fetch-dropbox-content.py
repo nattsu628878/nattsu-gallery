@@ -150,8 +150,10 @@ def copy_opus_assets(extracted_root: Path, opus_assets_dir: Path) -> int:
 def sync_opus_markdown(extracted_root: Path, opus_markdown_dir: Path) -> int:
     ensure_clean_dir(opus_markdown_dir)
     copied = 0
-    for file_path in extracted_root.rglob("*.md"):
+    for file_path in extracted_root.rglob("*"):
         if not file_path.is_file():
+            continue
+        if file_path.suffix.lower() != ".md":
             continue
         target = opus_markdown_dir / file_path.name
         shutil.copy2(file_path, target)
@@ -162,8 +164,10 @@ def sync_opus_markdown(extracted_root: Path, opus_markdown_dir: Path) -> int:
 def sync_timeline_markdown(extracted_root: Path, timeline_markdown_dir: Path) -> int:
     ensure_clean_dir(timeline_markdown_dir)
     copied = 0
-    for file_path in extracted_root.rglob("*.md"):
+    for file_path in extracted_root.rglob("*"):
         if not file_path.is_file():
+            continue
+        if file_path.suffix.lower() != ".md":
             continue
         target = timeline_markdown_dir / file_path.name
         shutil.copy2(file_path, target)
@@ -184,7 +188,7 @@ def main() -> int:
         repo_root = Path(__file__).resolve().parent.parent
         article_target = repo_root / "src" / "data" / "article" / "markdown"
         opus_markdown_target = repo_root / "src" / "data" / "opus" / "markdown"
-        opus_assets_target = repo_root / "public" / "opus"
+        opus_assets_target = repo_root / "src" / "data" / "opus" / "markdown" / "data"
         timeline_markdown_target = repo_root / "src" / "data" / "timeline" / "markdown"
         timeline_assets_target = repo_root / "public" / "timeline"
 
@@ -202,8 +206,12 @@ def main() -> int:
             extract_zip_bytes(opus_zip, opus_extract_dir)
             opus_markdown_count = sync_opus_markdown(opus_extract_dir, opus_markdown_target)
             if opus_markdown_count == 0:
-                raise RuntimeError("No .md files were found in Dropbox opus path")
-            print(f"[dropbox] synced opus markdown -> {opus_markdown_target} ({opus_markdown_count} files)")
+                print(
+                    f"[dropbox] warning: no markdown files found in Dropbox opus path; "
+                    f"continuing with empty {opus_markdown_target}"
+                )
+            else:
+                print(f"[dropbox] synced opus markdown -> {opus_markdown_target} ({opus_markdown_count} files)")
             opus_assets_count = copy_opus_assets(opus_extract_dir, opus_assets_target)
             print(f"[dropbox] synced opus assets -> {opus_assets_target} ({opus_assets_count} files)")
 
@@ -213,8 +221,12 @@ def main() -> int:
             extract_zip_bytes(timeline_zip, timeline_extract_dir)
             markdown_count = sync_timeline_markdown(timeline_extract_dir, timeline_markdown_target)
             if markdown_count == 0:
-                raise RuntimeError("No .md files were found in Dropbox timeline path")
-            print(f"[dropbox] synced timeline markdown -> {timeline_markdown_target} ({markdown_count} files)")
+                print(
+                    f"[dropbox] warning: no markdown files found in Dropbox timeline path; "
+                    f"continuing with empty {timeline_markdown_target}"
+                )
+            else:
+                print(f"[dropbox] synced timeline markdown -> {timeline_markdown_target} ({markdown_count} files)")
 
             copied_assets = copy_timeline_assets(timeline_extract_dir, timeline_assets_target)
             print(f"[dropbox] synced timeline assets -> {timeline_assets_target} ({copied_assets} files)")

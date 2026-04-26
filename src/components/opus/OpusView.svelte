@@ -153,7 +153,7 @@
       const videoId = extractVideoId(item.url);
       if (videoId) return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
     }
-    if (item.url) return item.url;
+    if (item.url) return resolveSitePath(item.url);
     return '';
   }
 
@@ -187,7 +187,7 @@
       window.open(`midi.html?file=${encodeURIComponent(item.assets.midi)}`, '_blank');
       return;
     }
-    if (item.url) window.open(item.url, '_blank');
+    if (item.url) window.open(resolveSitePath(item.url), '_blank');
   }
 
   function onActivateCard(event: KeyboardEvent, item: Item) {

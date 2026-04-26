@@ -1,6 +1,6 @@
 https://nattsu628878.github.io/nattsu-gallery
 
-# nattsu-gallery（運用者向け最小版）
+# nattsu-gallery
 
 ## 前提
 
@@ -28,6 +28,29 @@ DROPBOX_OPUS_PATH=/nattsu-gallery/opus \
 DROPBOX_TIMELINE_PATH=/nattsu-gallery/timeline \
 python3 scripts/fetch-dropbox-content.py
 ```
+
+必要なら Opus 画像を WebP 化:
+
+```bash
+bash scripts/normalize-opus-assets.sh
+```
+
+## Opus（Dropbox）運用フォーマット
+
+`opus/youtube-link.md` は以下フォーマットで管理（`type` は自動で `movie`）:
+
+```md
+id | title | url | date
+26-04-01 | Logic Sketches #3 | https://www.youtube.com/watch?v=xxxx | 26-04-01
+```
+
+- 動画の必要メタデータは `id`, `title`, `url`（`date` は任意。未指定時は `id` から推定）
+- 画像は md 不要（`opus/data/` に `id` と同名ファイルを置くだけ）
+- 画像の `type` は自動で `picture`
+- 画像の `date` は `id` から自動取得
+  - 例: `26-04-01.webp` → `date: 26-04-01`
+  - 例: `26-04-01-2.webp` → `date: 26-04-01`
+- 画像は `normalize-opus-assets.sh` で自動的に WebP へ変換
 
 ## ビルド確認
 
