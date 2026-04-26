@@ -1,7 +1,15 @@
 ---
 import OpusView from '../../components/opus/OpusView.svelte';
-import items from '../../data/opus/items.json';
 import '../../styles/pages/opus.css';
+import { parseOpusMarkdownFiles } from '../../lib/opus/markdown';
+
+const markdownModules = import.meta.glob('../../data/opus/markdown/**/*.md', {
+  query: '?raw',
+  import: 'default',
+  eager: true
+}) as Record<string, string>;
+
+const items = parseOpusMarkdownFiles(markdownModules);
 ---
 
 <!doctype html>

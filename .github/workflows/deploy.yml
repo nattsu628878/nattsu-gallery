@@ -43,6 +43,7 @@ jobs:
         env:
           DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
           DROPBOX_ARTICLE_PATH: ${{ secrets.DROPBOX_ARTICLE_PATH }}
+          DROPBOX_OPUS_PATH: ${{ secrets.DROPBOX_OPUS_PATH }}
           DROPBOX_TIMELINE_PATH: ${{ secrets.DROPBOX_TIMELINE_PATH }}
         run: python3 scripts/fetch-dropbox-content.py
 

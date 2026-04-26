@@ -84,6 +84,7 @@ def unique_paths(paths: list[str]) -> list[str]:
 def build_candidate_paths(primary_path: str, kind: str) -> list[str]:
     defaults = {
         "article": ["/nattsu-gallery/article", "/article", "/_md/article"],
+        "opus": ["/nattsu-gallery/opus", "/opus", "/_md/opus"],
         "timeline": ["/nattsu-gallery/timeline", "/timeline", "/_md/timeline"],
     }
     base = normalize_dropbox_path(primary_path)
@@ -132,6 +133,32 @@ def copy_timeline_assets(extracted_root: Path, timeline_assets_dir: Path) -> int
     return copied
 
 
+def copy_opus_assets(extracted_root: Path, opus_assets_dir: Path) -> int:
+    opus_assets_dir.mkdir(parents=True, exist_ok=True)
+    copied = 0
+    for file_path in extracted_root.rglob("*"):
+        if not file_path.is_file():
+            continue
+        if file_path.suffix.lower() not in MEDIA_EXTENSIONS:
+            continue
+        target = opus_assets_dir / file_path.name
+        shutil.copy2(file_path, target)
+        copied += 1
+    return copied
+
+
+def sync_opus_markdown(extracted_root: Path, opus_markdown_dir: Path) -> int:
+    ensure_clean_dir(opus_markdown_dir)
+    copied = 0
+    for file_path in extracted_root.rglob("*.md"):
+        if not file_path.is_file():
+            continue
+        target = opus_markdown_dir / file_path.name
+        shutil.copy2(file_path, target)
+        copied += 1
+    return copied
+
+
 def sync_timeline_markdown(extracted_root: Path, timeline_markdown_dir: Path) -> int:
     ensure_clean_dir(timeline_markdown_dir)
     copied = 0
@@ -148,12 +175,16 @@ def main() -> int:
     try:
         access_token = require_env("DROPBOX_ACCESS_TOKEN")
         article_path = os.environ.get("DROPBOX_ARTICLE_PATH", "/nattsu-gallery/article").strip() or "/nattsu-gallery/article"
+        opus_path = os.environ.get("DROPBOX_OPUS_PATH", "/nattsu-gallery/opus").strip() or "/nattsu-gallery/opus"
         timeline_path = os.environ.get("DROPBOX_TIMELINE_PATH", "/nattsu-gallery/timeline").strip() or "/nattsu-gallery/timeline"
         article_candidates = build_candidate_paths(article_path, "article")
+        opus_candidates = build_candidate_paths(opus_path, "opus")
         timeline_candidates = build_candidate_paths(timeline_path, "timeline")
 
         repo_root = Path(__file__).resolve().parent.parent
         article_target = repo_root / "src" / "data" / "article" / "markdown"
+        opus_markdown_target = repo_root / "src" / "data" / "opus" / "markdown"
+        opus_assets_target = repo_root / "public" / "opus"
         timeline_markdown_target = repo_root / "src" / "data" / "timeline" / "markdown"
         timeline_assets_target = repo_root / "public" / "timeline"
 
@@ -164,6 +195,17 @@ def main() -> int:
             article_zip, _ = download_zip_with_fallback(access_token, article_candidates, "article")
             extract_zip_bytes(article_zip, article_target)
             print(f"[dropbox] synced article markdown -> {article_target}")
+
+            # Opus
+            opus_extract_dir = tmp_dir / "opus"
+            opus_zip, _ = download_zip_with_fallback(access_token, opus_candidates, "opus")
+            extract_zip_bytes(opus_zip, opus_extract_dir)
+            opus_markdown_count = sync_opus_markdown(opus_extract_dir, opus_markdown_target)
+            if opus_markdown_count == 0:
+                raise RuntimeError("No .md files were found in Dropbox opus path")
+            print(f"[dropbox] synced opus markdown -> {opus_markdown_target} ({opus_markdown_count} files)")
+            opus_assets_count = copy_opus_assets(opus_extract_dir, opus_assets_target)
+            print(f"[dropbox] synced opus assets -> {opus_assets_target} ({opus_assets_count} files)")
 
             # Timeline
             timeline_extract_dir = tmp_dir / "timeline"

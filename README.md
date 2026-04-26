@@ -1,66 +1,41 @@
 https://nattsu628878.github.io/nattsu-gallery
 
-# nattsu-gallery（自分用メモ）
+# nattsu-gallery（運用者向け最小版）
 
-このリポジトリは、`Astro + Svelte` で動く個人サイトです。  
-`Opus`（ギャラリー）と `Article`（Markdown表示）がメインです。
+## 前提
 
-## コマンド
+- 本文データの正本は Dropbox（`article` / `opus` / `timeline`）
+- リポジトリ側の `src/data/...` と `public/...` は同期結果（`.gitignore` 対象）
 
-- **開発（サイト全体）**: `./dev.sh`（Astro のみ。`npm run dev` の前に `predev` で Article アセット正規化）
-- **nattsu editor**: `./editor.sh`（Astro + `tools/nattsu-editor` を同時起動。未導入の `node_modules` は自動で `npm install`）
-- ビルド: `npm run build`（`@astrojs/node` により静的ファイルは `dist/client`。GitHub Pages もここを公開）
-- プレビュー: `npm run preview`（Node アダプタのサーバでプレビュー）
+## ローカル開発
 
-補足: `package.json` の `npm run dev` / `npm run dev:all` もそのまま使える。
+```bash
+./dev.sh
+```
 
-## Article アセット運用ルール
+## Dropbox 同期（ローカル）
 
-対象ディレクトリ:
-- `src/data/article/markdown/`
-- `src/data/article/markdown/data/`
+```bash
+DROPBOX_ACCESS_TOKEN=... python3 scripts/fetch-dropbox-content.py
+```
 
-運用:
-- 画像は `webp` に統一
-- 動画は `webm` に統一
-- 変換元（png/jpg/jpeg/mov/mp4）は自動変換後に削除
-- Markdown 内リンクはスクリプトで自動置換
+必要ならパス上書き:
 
-変換スクリプト:
-- `scripts/normalize-article-assets.sh`
+```bash
+DROPBOX_ACCESS_TOKEN=... \
+DROPBOX_ARTICLE_PATH=/nattsu-gallery/article \
+DROPBOX_OPUS_PATH=/nattsu-gallery/opus \
+DROPBOX_TIMELINE_PATH=/nattsu-gallery/timeline \
+python3 scripts/fetch-dropbox-content.py
+```
 
-## ディレクトリ
+## ビルド確認
 
-- **nattsu editor（ローカル専用 UI）**: `tools/nattsu-editor`（Astro + Svelte）。`/`（ホーム）から `opus` / `timeline` の編集画面へ遷移して、同一アプリ内で編集する。
+```bash
+npm run build
+```
 
-### Opus の保存（API 経由）
+## 本番デプロイ
 
-- Opus エディタからの**一覧取得・保存・削除・並び替え**は、いずれも **Astro の API ルート**に HTTP で送る（ファイルを直接触る UI ではない）。
-- ルート: `src/pages/api/editor/opus.ts`（`GET` / `POST` / `PUT` / `DELETE`）
-- 保存先: マニフェストは `src/data/opus/items.json`、画像・動画は `public/opus/`（必要に応じてサーバ側の `cwebp` や一括 WebP スクリプトが動く）
-- 本番の GitHub Pages ではこの API は動かない（**ローカルで `astro dev` しているときだけ**編集可能、という想定）
-
-## コンテンツの置き場所
-
-- Opus データ: `src/data/opus/items.json`
-
-- Article 本文: `src/data/article/markdown/*.md`
-- Article 画像/動画: `src/data/article/markdown/data/*`
-（Obsidianから_mdを全コピペでOK）
-
-## Article（記事）を更新するとき
-
-1. いつもどおり **Obsidian** などで、`~/Library/CloudStorage/Dropbox/_md` を編集する。
-2. リポジトリの**ルート**で次を実行する（コピー → `data` 内の画像・動画の正規化まで）。
-
-   ```bash
-   ./sync-obsidian.sh
-   ```
-
-3. 変更を **Git に commit** する（必要なら `git push` で本番デプロイまで）。
-
-## メモ
-
-- 開発中に「動画がモバイルで再生できない」場合は、まず拡張子を確認する（`webm` かどうか）
-- `mov` は端末差が出やすいので基本使わない
-- 文字は見た目同じでも Unicode 差分があるため、ファイル名の重複に注意（例: `で` の正規化差）
+- `main` へ push（または Actions の `workflow_dispatch`）
+- Actions 内で Dropbox 同期 → build → GitHub Pages 配信

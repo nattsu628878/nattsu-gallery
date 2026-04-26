@@ -1,13 +1,16 @@
 # 依存関係
 node_modules/
-tools/nattsu-editor/dist/
 
 # 環境・編集用
 .DS_Store
 *.log
+__pycache__/
 .env
 .env.*
 
 # Dropbox 同期データ（本文の正本は Dropbox 側）
 src/data/article/markdown/
+src/data/opus/markdown/
 src/data/timeline/markdown/
+public/opus/
+public/timeline/
