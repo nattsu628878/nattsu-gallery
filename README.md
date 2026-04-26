@@ -17,6 +17,8 @@ https://nattsu628878.github.io/nattsu-gallery
 
 `scripts/fetch-dropbox-content.py` は、zip 先頭に余分に `content` / `article` / `opus` / `timeline` が 1 段ある場合は自動で畳みます。Opus 資産の `data/opus/data` 型のネストも解消します。
 
+**Article / Opus / Timeline の形式の要約**（ディレクトリ・ファイル名・表記法）: [docs/CONTENT-FORMAT.md](docs/CONTENT-FORMAT.md)
+
 ## ローカル開発
 
 ```bash

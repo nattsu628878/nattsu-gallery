@@ -1,14 +1,23 @@
 # 依存関係
 node_modules/
 
-# 環境・編集用
-.DS_Store
-*.log
-__pycache__/
+# ビルド・Astro 生成物（本番は GitHub Actions でビルド）
+dist/
+.astro/
+
+# 環境・シークレット
 .env
 .env.*
 
-# Dropbox 同期データ（本文の正本は Dropbox 側）
+# OS・エディタ
+.DS_Store
+Thumbs.db
+*.log
+__pycache__/
+*.pyc
+*.tsbuildinfo
+
+# Dropbox 同期する本文（正本は Dropbox 側。必要なら空ディレクトリ用に -f で .gitkeep をコミット）
 src/data/article/
 src/data/opus/
 src/data/timeline/
