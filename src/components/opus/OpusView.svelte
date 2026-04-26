@@ -25,6 +25,8 @@
   const resolveSitePath = (path?: string) => {
     if (!path) return '';
     if (/^https?:\/\//.test(path) || path.startsWith('data:')) return path;
+    const normalizedBase = base.endsWith('/') ? base : `${base}/`;
+    if (path === normalizedBase || path.startsWith(normalizedBase)) return path;
     return withBase(path);
   };
   const modeRoutes = ['opus/?view=grid', 'article/', 'timeline/', 'aboutme/'] as const;
