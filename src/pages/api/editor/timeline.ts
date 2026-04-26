@@ -7,7 +7,7 @@ import { promisify } from 'node:util';
 export const prerender = false;
 
 const ROOT = process.cwd();
-const ITEMS_PATH = path.join(ROOT, 'src', 'data', 'timeline', 'items.json');
+const TIMELINE_MARKDOWN_DIR = path.join(ROOT, 'src', 'data', 'timeline', 'markdown');
 const TIMELINE_ASSETS_DIR = path.join(ROOT, 'public', 'timeline');
 const execFileAsync = promisify(execFile);
 
@@ -24,13 +24,70 @@ type TimelineItem = {
 };
 
 async function readItems(): Promise<TimelineItem[]> {
-  const raw = await fs.readFile(ITEMS_PATH, 'utf8');
-  const parsed = JSON.parse(raw);
-  return Array.isArray(parsed) ? parsed : [];
+  await fs.mkdir(TIMELINE_MARKDOWN_DIR, { recursive: true });
+  const files = (await fs.readdir(TIMELINE_MARKDOWN_DIR))
+    .filter((name) => name.toLowerCase().endsWith('.md'))
+    .sort((a, b) => a.localeCompare(b));
+  const items: TimelineItem[] = [];
+  for (const file of files) {
+    const raw = await fs.readFile(path.join(TIMELINE_MARKDOWN_DIR, file), 'utf8');
+    const normalized = raw.replace(/\r\n/g, '\n');
+    const hasFrontmatter = normalized.startsWith('---\n');
+    const end = hasFrontmatter ? normalized.indexOf('\n---\n', 4) : -1;
+    const frontmatter = hasFrontmatter && end >= 0 ? normalized.slice(4, end) : '';
+    const body = hasFrontmatter && end >= 0 ? normalized.slice(end + 5).trim() : normalized.trim();
+    const meta: Record<string, string> = {};
+    if (frontmatter) {
+      for (const line of frontmatter.split('\n')) {
+        const idx = line.indexOf(':');
+        if (idx <= 0) continue;
+        const key = line.slice(0, idx).trim();
+        const value = line.slice(idx + 1).trim().replace(/^"(.*)"$/, '$1');
+        if (key) meta[key] = value;
+      }
+    }
+    const fallbackId = file.replace(/\.md$/i, '');
+    const id = sanitizeId(meta.id || fallbackId);
+    if (!id) continue;
+    const item: TimelineItem = {
+      id,
+      date: meta.date?.trim() || undefined,
+      account: meta.account?.trim() || undefined,
+      quoteTo: meta.quoteTo?.trim() || undefined,
+      content: body || undefined
+    };
+    const image = meta.image?.trim();
+    const video = meta.video?.trim();
+    if (image || video) item.assets = { image: image || undefined, video: video || undefined };
+    items.push(item);
+  }
+  return items;
 }
 
 async function writeItems(items: TimelineItem[]) {
-  await fs.writeFile(ITEMS_PATH, `${JSON.stringify(items, null, 2)}\n`, 'utf8');
+  await fs.mkdir(TIMELINE_MARKDOWN_DIR, { recursive: true });
+  const existing = await fs.readdir(TIMELINE_MARKDOWN_DIR).catch(() => []);
+  await Promise.all(
+    existing
+      .filter((name) => name.toLowerCase().endsWith('.md'))
+      .map((name) => fs.unlink(path.join(TIMELINE_MARKDOWN_DIR, name)).catch(() => {}))
+  );
+  for (const item of items) {
+    const id = sanitizeId(item.id);
+    if (!id) continue;
+    const lines = [
+      '---',
+      `id: ${id}`,
+      item.date ? `date: ${item.date}` : '',
+      item.account ? `account: ${item.account}` : '',
+      item.quoteTo ? `quoteTo: ${sanitizeId(item.quoteTo)}` : '',
+      item.assets?.image ? `image: ${item.assets.image}` : '',
+      item.assets?.video ? `video: ${item.assets.video}` : '',
+      '---',
+      item.content?.trim() || ''
+    ].filter(Boolean);
+    await fs.writeFile(path.join(TIMELINE_MARKDOWN_DIR, `${id}.md`), `${lines.join('\n')}\n`, 'utf8');
+  }
 }
 
 function sanitizeId(id: string) {

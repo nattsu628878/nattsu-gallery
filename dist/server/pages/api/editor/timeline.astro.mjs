@@ -6,17 +6,71 @@ export { renderers } from '../../../renderers.mjs';
 
 const prerender = false;
 const ROOT = process.cwd();
-const ITEMS_PATH = path.join(ROOT, "src", "data", "timeline", "items.json");
+const TIMELINE_MARKDOWN_DIR = path.join(ROOT, "src", "data", "timeline", "markdown");
 const TIMELINE_ASSETS_DIR = path.join(ROOT, "public", "timeline");
 const execFileAsync = promisify(execFile);
 async function readItems() {
-  const raw = await promises.readFile(ITEMS_PATH, "utf8");
-  const parsed = JSON.parse(raw);
-  return Array.isArray(parsed) ? parsed : [];
+  await promises.mkdir(TIMELINE_MARKDOWN_DIR, { recursive: true });
+  const files = (await promises.readdir(TIMELINE_MARKDOWN_DIR)).filter((name) => name.toLowerCase().endsWith(".md")).sort((a, b) => a.localeCompare(b));
+  const items = [];
+  for (const file of files) {
+    const raw = await promises.readFile(path.join(TIMELINE_MARKDOWN_DIR, file), "utf8");
+    const normalized = raw.replace(/\r\n/g, "\n");
+    const hasFrontmatter = normalized.startsWith("---\n");
+    const end = hasFrontmatter ? normalized.indexOf("\n---\n", 4) : -1;
+    const frontmatter = hasFrontmatter && end >= 0 ? normalized.slice(4, end) : "";
+    const body = hasFrontmatter && end >= 0 ? normalized.slice(end + 5).trim() : normalized.trim();
+    const meta = {};
+    if (frontmatter) {
+      for (const line of frontmatter.split("\n")) {
+        const idx = line.indexOf(":");
+        if (idx <= 0) continue;
+        const key = line.slice(0, idx).trim();
+        const value = line.slice(idx + 1).trim().replace(/^"(.*)"$/, "$1");
+        if (key) meta[key] = value;
+      }
+    }
+    const fallbackId = file.replace(/\.md$/i, "");
+    const id = sanitizeId(meta.id || fallbackId);
+    if (!id) continue;
+    const item = {
+      id,
+      date: meta.date?.trim() || void 0,
+      account: meta.account?.trim() || void 0,
+      quoteTo: meta.quoteTo?.trim() || void 0,
+      content: body || void 0
+    };
+    const image = meta.image?.trim();
+    const video = meta.video?.trim();
+    if (image || video) item.assets = { image: image || void 0, video: video || void 0 };
+    items.push(item);
+  }
+  return items;
 }
 async function writeItems(items) {
-  await promises.writeFile(ITEMS_PATH, `${JSON.stringify(items, null, 2)}
+  await promises.mkdir(TIMELINE_MARKDOWN_DIR, { recursive: true });
+  const existing = await promises.readdir(TIMELINE_MARKDOWN_DIR).catch(() => []);
+  await Promise.all(
+    existing.filter((name) => name.toLowerCase().endsWith(".md")).map((name) => promises.unlink(path.join(TIMELINE_MARKDOWN_DIR, name)).catch(() => {
+    }))
+  );
+  for (const item of items) {
+    const id = sanitizeId(item.id);
+    if (!id) continue;
+    const lines = [
+      "---",
+      `id: ${id}`,
+      item.date ? `date: ${item.date}` : "",
+      item.account ? `account: ${item.account}` : "",
+      item.quoteTo ? `quoteTo: ${sanitizeId(item.quoteTo)}` : "",
+      item.assets?.image ? `image: ${item.assets.image}` : "",
+      item.assets?.video ? `video: ${item.assets.video}` : "",
+      "---",
+      item.content?.trim() || ""
+    ].filter(Boolean);
+    await promises.writeFile(path.join(TIMELINE_MARKDOWN_DIR, `${id}.md`), `${lines.join("\n")}
 `, "utf8");
+  }
 }
 function sanitizeId(id) {
   return String(id || "").trim().replace(/[^a-zA-Z0-9_-]/g, "-");
@@ -114,7 +168,8 @@ const POST = async ({ request }) => {
       id,
       date: raw?.date ? String(raw.date).trim() : void 0,
       account: raw?.account ? String(raw.account).trim() : void 0,
-      content: raw?.content ? String(raw.content).trim() : void 0
+      content: raw?.content ? String(raw.content).trim() : void 0,
+      quoteTo: raw?.quoteTo ? sanitizeId(raw.quoteTo) : void 0
     };
     const existing = await readItems();
     const existingIndex = existing.findIndex((item) => item.id === id);

@@ -116,13 +116,6 @@ def extract_zip_bytes(zip_bytes: bytes, destination: Path) -> None:
         zf.extractall(destination)
 
 
-def find_first_file(root: Path, filename: str) -> Path | None:
-    for path in sorted(root.rglob(filename), key=lambda p: len(p.parts)):
-        if path.is_file():
-            return path
-    return None
-
-
 def copy_timeline_assets(extracted_root: Path, timeline_assets_dir: Path) -> int:
     timeline_assets_dir.mkdir(parents=True, exist_ok=True)
     copied = 0
@@ -139,6 +132,18 @@ def copy_timeline_assets(extracted_root: Path, timeline_assets_dir: Path) -> int
     return copied
 
 
+def sync_timeline_markdown(extracted_root: Path, timeline_markdown_dir: Path) -> int:
+    ensure_clean_dir(timeline_markdown_dir)
+    copied = 0
+    for file_path in extracted_root.rglob("*.md"):
+        if not file_path.is_file():
+            continue
+        target = timeline_markdown_dir / file_path.name
+        shutil.copy2(file_path, target)
+        copied += 1
+    return copied
+
+
 def main() -> int:
     try:
         access_token = require_env("DROPBOX_ACCESS_TOKEN")
@@ -149,7 +154,7 @@ def main() -> int:
 
         repo_root = Path(__file__).resolve().parent.parent
         article_target = repo_root / "src" / "data" / "article" / "markdown"
-        timeline_items_target = repo_root / "src" / "data" / "timeline" / "items.json"
+        timeline_markdown_target = repo_root / "src" / "data" / "timeline" / "markdown"
         timeline_assets_target = repo_root / "public" / "timeline"
 
         with tempfile.TemporaryDirectory(prefix="dropbox-sync-") as tmp:
@@ -164,13 +169,10 @@ def main() -> int:
             timeline_extract_dir = tmp_dir / "timeline"
             timeline_zip, _ = download_zip_with_fallback(access_token, timeline_candidates, "timeline")
             extract_zip_bytes(timeline_zip, timeline_extract_dir)
-
-            items_source = find_first_file(timeline_extract_dir, "items.json")
-            if not items_source:
-                raise RuntimeError("items.json was not found in Dropbox timeline path")
-            timeline_items_target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(items_source, timeline_items_target)
-            print(f"[dropbox] synced timeline items -> {timeline_items_target}")
+            markdown_count = sync_timeline_markdown(timeline_extract_dir, timeline_markdown_target)
+            if markdown_count == 0:
+                raise RuntimeError("No .md files were found in Dropbox timeline path")
+            print(f"[dropbox] synced timeline markdown -> {timeline_markdown_target} ({markdown_count} files)")
 
             copied_assets = copy_timeline_assets(timeline_extract_dir, timeline_assets_target)
             print(f"[dropbox] synced timeline assets -> {timeline_assets_target} ({copied_assets} files)")
