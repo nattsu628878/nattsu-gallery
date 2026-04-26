@@ -8,8 +8,26 @@ const markdownModules = import.meta.glob('../../data/timeline/content/**/*.md', 
   import: 'default',
   eager: true
 }) as Record<string, string>;
+const assetModules = import.meta.glob('../../data/timeline/content/data/**/*', {
+  query: '?url',
+  import: 'default',
+  eager: true
+}) as Record<string, string>;
 
-const items = parseTimelineMarkdownFiles(markdownModules);
+const assetMap = new Map<string, string>();
+Object.entries(assetModules).forEach(([filePath, url]) => {
+  const normalized = filePath.replace(/\\/g, '/');
+  const marker = '/src/data/timeline/content/data/';
+  const rel = normalized.includes(marker)
+    ? normalized.split(marker)[1]
+    : normalized.split('/').slice(-1)[0];
+  const key = rel.toLowerCase();
+  const file = rel.split('/').pop()?.toLowerCase() || key;
+  assetMap.set(key, String(url));
+  assetMap.set(file, String(url));
+});
+
+const items = parseTimelineMarkdownFiles(markdownModules, assetMap);
 ---
 
 <!doctype html>

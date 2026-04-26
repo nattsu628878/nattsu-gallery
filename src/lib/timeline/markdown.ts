@@ -10,6 +10,9 @@ export type TimelineItem = {
   };
 };
 
+const IMAGE_EXT_RE = /\.(png|jpe?g|webp|gif|avif|svg)$/i;
+const VIDEO_EXT_RE = /\.(mp4|webm|ogg|mov)$/i;
+
 function parseFrontmatter(raw: string) {
   const normalized = raw.replace(/\r\n/g, "\n");
   if (!normalized.startsWith("---\n")) {
@@ -39,20 +42,65 @@ function ensureId(filePath: string, frontmatterId?: string) {
   return id.replace(/[^a-zA-Z0-9_-]/g, "-");
 }
 
-export function parseTimelineMarkdownFiles(markdownModules: Record<string, string>): TimelineItem[] {
+function resolveAssetUrl(assetMap: Map<string, string>, target?: string) {
+  const raw = String(target || "").trim();
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw) || raw.startsWith("data:")) return raw;
+  const normalized = raw.replace(/^\/+/, "").replace(/\\/g, "/").toLowerCase();
+  const exact = assetMap.get(normalized);
+  if (exact) return exact;
+  const file = normalized.split("/").pop() || normalized;
+  return assetMap.get(file) || "";
+}
+
+function extractEmbeddedMedia(body: string, assetMap: Map<string, string>) {
+  let cleaned = body;
+  let image = "";
+  let video = "";
+
+  const pick = (targetRaw: string) => {
+    const target = String(targetRaw || "").trim();
+    if (!target) return;
+    const resolved = resolveAssetUrl(assetMap, target);
+    if (!resolved) return;
+    if (!image && IMAGE_EXT_RE.test(target)) image = resolved;
+    if (!video && VIDEO_EXT_RE.test(target)) video = resolved;
+  };
+
+  cleaned = cleaned.replace(/!\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g, (full, targetRaw) => {
+    pick(targetRaw);
+    return "";
+  });
+
+  cleaned = cleaned.replace(/!\[[^\]]*\]\(([^)]+)\)/g, (full, targetRaw) => {
+    pick(targetRaw);
+    return "";
+  });
+
+  cleaned = cleaned.replace(/\n{3,}/g, "\n\n").trim();
+  return { image, video, cleaned };
+}
+
+export function parseTimelineMarkdownFiles(
+  markdownModules: Record<string, string>,
+  assetMap: Map<string, string> = new Map()
+): TimelineItem[] {
   return Object.entries(markdownModules)
     .map(([filePath, raw]) => {
       const { meta, body } = parseFrontmatter(raw);
       const id = ensureId(filePath, meta.id);
       if (!id) return null;
-      const image = meta.image?.trim();
-      const video = meta.video?.trim();
+      const embedded = extractEmbeddedMedia(body, assetMap);
+      const image =
+        resolveAssetUrl(assetMap, meta.image?.trim()) || embedded.image || meta.image?.trim() || "";
+      const video =
+        resolveAssetUrl(assetMap, meta.video?.trim()) || embedded.video || meta.video?.trim() || "";
       const item: TimelineItem = {
         id,
         date: meta.date?.trim() || undefined,
         account: meta.account?.trim() || undefined,
         quoteTo: meta.quoteTo?.trim() || undefined,
-        content: body || undefined,
+        content: embedded.cleaned || undefined,
       };
       if (image || video) item.assets = { image: image || undefined, video: video || undefined };
       return item;

@@ -21,4 +21,7 @@ python3 "$ROOT/scripts/fetch-dropbox-content.py"
 echo "[sync] Normalizing opus images to webp..."
 bash "$ROOT/scripts/normalize-opus-assets.sh"
 
+echo "[sync] Normalizing timeline assets to webp/webm..."
+bash "$ROOT/scripts/normalize-timeline-assets.sh"
+
 echo "[sync] Done."

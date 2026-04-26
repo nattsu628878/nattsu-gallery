@@ -82,6 +82,16 @@ id | title | url | date
   - 例: `26-04-01-2.webp` → `date: 26-04-01`
 - 画像は `normalize-opus-assets.sh` で自動的に WebP へ変換
 
+## Article / Timeline の Obsidian 埋め込み
+
+- `article/content/*.md`, `timeline/content/*.md` 内で Obsidian 埋め込みを利用可能
+  - 例: `![[sample.png]]`, `![[movie.mp4]]`
+- 実ファイルは `article/content/data/`, `timeline/content/data/` に配置
+- 同期後に以下スクリプトで自動変換
+  - Article: `scripts/normalize-article-assets.sh`（画像→webp, 動画→webm）
+  - Timeline: `scripts/normalize-timeline-assets.sh`（画像→webp, 動画→webm）
+- 変換後は埋め込み参照も自動で `webp/webm` 側へ更新
+
 ## ビルド確認
 
 ```bash

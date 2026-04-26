@@ -50,6 +50,9 @@ jobs:
       - name: Normalize opus assets to webp
         run: bash scripts/normalize-opus-assets.sh
 
+      - name: Normalize timeline assets to webp/webm
+        run: bash scripts/normalize-timeline-assets.sh
+
       - name: Verify opus assets
         run: |
           echo "Opus content files:"

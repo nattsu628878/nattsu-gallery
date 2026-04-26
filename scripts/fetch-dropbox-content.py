@@ -190,7 +190,7 @@ def main() -> int:
         opus_markdown_target = repo_root / "src" / "data" / "opus" / "content"
         opus_assets_target = repo_root / "src" / "data" / "opus" / "content" / "data"
         timeline_markdown_target = repo_root / "src" / "data" / "timeline" / "content"
-        timeline_assets_target = repo_root / "public" / "timeline"
+        timeline_assets_target = repo_root / "src" / "data" / "timeline" / "content" / "data"
 
         with tempfile.TemporaryDirectory(prefix="dropbox-sync-") as tmp:
             tmp_dir = Path(tmp)
