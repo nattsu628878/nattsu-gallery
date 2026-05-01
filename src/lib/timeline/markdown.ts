@@ -1,9 +1,7 @@
 export type TimelineItem = {
   id: string;
   date?: string;
-  account?: string;
   content?: string;
-  quoteTo?: string;
   /** ファイル名先頭の表示順（同日内ソート用） */
   order?: number;
   assets?: {
@@ -60,12 +58,6 @@ function normalizeDateOnly(token: string): string {
   return `${expandYearInDatePart(m[1])}-${m[2]}-${m[3]}`;
 }
 
-const ACCOUNT_KEYS = new Set(["nattsu", "emo", "tech"]);
-
-function isAccountKey(s: string): boolean {
-  return ACCOUNT_KEYS.has(s.toLowerCase());
-}
-
 /**
  * フォルダの日付 + 先頭表示順 だけで id
  * 表示順 1 → `2026-04-27`、2 以上 → `2026-04-27-2` 形式
@@ -78,50 +70,22 @@ function idFromFolderDateAndOrder(folderDate: string, orderNum: number): string 
 }
 
 /**
- * 引用先トークン（`2026-04-27` または `26-04-27-2` 等）を id に正規化
- */
-function normalizeQuoteIdToken(quote: string): string {
-  const s = String(quote).trim();
-  const m = s.match(/^(\d{2,4}-\d{2}-\d{2})(?:-(\d+))?$/);
-  if (!m) return s;
-  const d = normalizeDateOnly(m[1]);
-  if (!m[2]) return d;
-  if (m[2] === "1") return d;
-  return `${d}-${m[2]}`;
-}
-
-/**
- * `表示順_アカウント` / `表示順_アカウント_引用先id`（日付はフォルダ名のみ）
+ * `表示順.md`（推奨）/ `表示順_任意文字列.md`（互換）を解釈
  */
 function parseFilenameMeta(
   filePath: string,
   basename: string
-): { id: string; account: string; date: string; quoteTo?: string; order: number } | null {
+): { id: string; date: string; order: number } | null {
   const folderDate = inferDateFromFilePath(filePath);
   if (folderDate) {
-    const parts = basename.split("_");
-    if (parts.length === 2) {
-      const order = parseInt(parts[0] ?? "", 10);
-      if (Number.isFinite(order) && isAccountKey(parts[1] ?? "")) {
-        return {
-          id: idFromFolderDateAndOrder(folderDate, order),
-          account: (parts[1] ?? "").toLowerCase(),
-          date: folderDate,
-          order,
-        };
-      }
-    }
-    if (parts.length === 3) {
-      const order = parseInt(parts[0] ?? "", 10);
-      if (Number.isFinite(order) && isAccountKey(parts[1] ?? "")) {
-        return {
-          id: idFromFolderDateAndOrder(folderDate, order),
-          account: (parts[1] ?? "").toLowerCase(),
-          date: folderDate,
-          quoteTo: normalizeQuoteIdToken(parts[2] ?? ""),
-          order,
-        };
-      }
+    const m = basename.match(/^(\d+)(?:_.*)?$/);
+    const order = parseInt(m?.[1] ?? "", 10);
+    if (Number.isFinite(order)) {
+      return {
+        id: idFromFolderDateAndOrder(folderDate, order),
+        date: folderDate,
+        order,
+      };
     }
   }
   return null;
@@ -194,8 +158,6 @@ export function parseTimelineMarkdownFiles(
       const item: TimelineItem = {
         id,
         date: fromName?.date || meta.date?.trim() || inferDateFromFilePath(filePath, id),
-        account: (fromName?.account || meta.account?.trim()) || undefined,
-        quoteTo: (fromName?.quoteTo || meta.quoteTo?.trim()) || undefined,
         content: embedded.cleaned || undefined,
         order: fromName?.order,
       };

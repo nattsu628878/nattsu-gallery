@@ -41,19 +41,19 @@ id | title | url | date
 |------|------|
 | 置き場所 | `src/data/timeline/`。投稿は日付フォルダ配下: `YY-MM-DD/` または `YYYY-MM-DD/` |
 | 日付 | **フォルダ名**から自動（本文 frontmatter 省略可） |
+| 表示 | **テキスト・画像・動画のみ** |
 | 埋め込み | Article と同様 `![[...]]` 等。メディアは `timeline/data/` などに置き `normalize-timeline-assets.sh` 可 |
 
 ### ファイル名（推奨・`_` 区切り）
 
 | 種別 | パターン | 例 |
 |------|----------|-----|
-| 通常 | `{表示順}_{account}.md` | `1_nattsu.md` |
-| 引用 | `{表示順}_{account}_{引用先id}.md` | `2_emo_2026-04-27.md` |
+| 推奨 | `{表示順}.md` | `1.md` |
+| 互換 | `{表示順}_任意文字列.md` | `1_today.md` |
 
-- **account**: `nattsu` / `emo` / `tech`
 - **表示順**: 同じ日付フォルダ内で数が**大きいほど上**、**1 が最下位**
 - **id** は「フォルダの日付 + 表示順」から自動（1 番目 `YYYY-MM-DD`、2 以降 `YYYY-MM-DD-2` 形式）
-- 上記に合わない `.md` は **YAML frontmatter**（`id` / `date` / `account` / `quoteTo` 等）で指定可能
+- 上記に合わない `.md` は **YAML frontmatter**（`id` / `date` など）で指定可能
 
 ---
 
