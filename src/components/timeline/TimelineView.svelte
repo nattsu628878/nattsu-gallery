@@ -171,7 +171,7 @@
   <main>
     <section class="timeline-section">
       {#if timelineItems.length === 0}
-        <p class="timeline-empty">No posts yet.</p>
+        <p class="timeline-empty">No data</p>
       {:else}
         <div class="timeline-list">
           {#each timelineItems as item (item.id)}
