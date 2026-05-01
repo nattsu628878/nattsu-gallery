@@ -1,6 +1,6 @@
 # Article / Opus / Timeline データ形式
 
-正本は Dropbox。リポジトリ上は `src/data/` 直下に**種別フォルダだけ**置く（余計な `content/` なし）。
+記事・アート・タイムラインの本文・素材は **`src/data/`** 直下で管理します（種別ごとにフォルダを分ける。余計な `content/` ネストは不要）。
 
 ---
 
@@ -10,7 +10,7 @@
 |------|------|
 | 置き場所 | `src/data/article/`（`*.md` と必要なら `data/`） |
 | 記事 ID / URL | 原則 **ファイル名**（`*.md` を除く）。サブフォルダがあればそのパスがスラッグになる |
-| 画像・動画 | 本文で Obsidian 埋め込み `![[名前.ext]]`、実体は `**/data/` に配置。ビルド前に `scripts/normalize-article-assets.sh` で webp / webm 化可 |
+| 画像・動画 | 本文で Obsidian 埋め込み `![[名前.ext]]`、実体は `**/data/` に配置。`scripts/normalize-article-assets.sh` で webp / webm 化可 |
 
 ---
 
@@ -59,5 +59,4 @@ id | title | url | date
 
 ## 補足
 
-- Dropbox 取り込み: `scripts/fetch-dropbox-content.py` または `sync-dropbox-content.sh`
-- 運用の全体像はルート [README.md](../README.md) を参照
+- メディア正規化の全体像・開発手順はルート [README.md](../README.md) を参照

@@ -4,20 +4,18 @@ https://nattsu628878.github.io/nattsu-gallery
 
 ## 前提
 
-- 本文データの正本は Dropbox（`article` / `opus` / `timeline`）
-- リポジトリ側の `src/data/...` と `public/...` は同期結果（`.gitignore` 対象）
+- Article / Opus / Timeline の本文・素材は **リポジトリ内の** `src/data/article/`、`src/data/opus/`、`src/data/timeline/` で管理します（Git でバージョン管理する想定）
+- `/public/` の固定アセット（アイコン等）は従来どおり
 
-### ディレクトリ形（Dropbox と同じ並びに揃える）
+### ディレクトリ形
 
 | 種別 | 置き場所 | 中身の例 |
 |------|----------|----------|
-| Article | `src/data/article/` | `*.md` と `data/`（`src/data/article/` 直下。余計な `content/` は置かない） |
-| Opus | `src/data/opus/` | `youtube-link.md` と `data/*.webp`（同上。`data/opus/data/` のネストは不要） |
-| Timeline | `src/data/timeline/` | `YY-MM-DD/*.md` と `data/`（同上） |
+| Article | `src/data/article/` | `*.md` と `data/`（直下。余計な `content/` は置かない） |
+| Opus | `src/data/opus/` | `youtube-link.md` と `data/*.webp`（`data/opus/data/` のネストは不要） |
+| Timeline | `src/data/timeline/` | `YY-MM-DD/*.md` と `data/` |
 
-`scripts/fetch-dropbox-content.py` は、zip 先頭に余分に `content` / `article` / `opus` / `timeline` が 1 段ある場合は自動で畳みます。Opus 資産の `data/opus/data` 型のネストも解消します。
-
-**Article / Opus / Timeline の形式の要約**（ディレクトリ・ファイル名・表記法）: [docs/CONTENT-FORMAT.md](docs/CONTENT-FORMAT.md)
+**詳細**: [docs/CONTENT-FORMAT.md](docs/CONTENT-FORMAT.md)
 
 ## ローカル開発
 
@@ -25,59 +23,17 @@ https://nattsu628878.github.io/nattsu-gallery
 ./dev.sh
 ```
 
-## Dropbox 同期（ローカル）
+### メディアの正規化（任意・ローカル / CI で実行）
 
 ```bash
-DROPBOX_ACCESS_TOKEN=... python3 scripts/fetch-dropbox-content.py
-```
-
-または、ラッパースクリプト:
-
-```bash
-DROPBOX_ACCESS_TOKEN=... ./sync-dropbox-content.sh
-```
-
-必要ならパス上書き:
-
-```bash
-DROPBOX_ACCESS_TOKEN=... \
-DROPBOX_ARTICLE_PATH=/nattsu-gallery/article \
-DROPBOX_OPUS_PATH=/nattsu-gallery/opus \
-DROPBOX_TIMELINE_PATH=/nattsu-gallery/timeline \
-python3 scripts/fetch-dropbox-content.py
-```
-
-### `DROPBOX_ACCESS_TOKEN` の設定方法
-
-1回だけ:
-
-```bash
-DROPBOX_ACCESS_TOKEN='YOUR_TOKEN' ./sync-dropbox-content.sh
-```
-
-現在のシェルで有効化:
-
-```bash
-export DROPBOX_ACCESS_TOKEN='YOUR_TOKEN'
-./sync-dropbox-content.sh
-```
-
-恒久設定（zsh）:
-
-```bash
-echo "export DROPBOX_ACCESS_TOKEN='YOUR_TOKEN'" >> ~/.zshrc
-source ~/.zshrc
-```
-
-※ トークンをスクリプトやリポジトリに直接書かないこと
-
-必要なら Opus 画像を WebP 化:
-
-```bash
+bash scripts/normalize-article-assets.sh
 bash scripts/normalize-opus-assets.sh
+bash scripts/normalize-timeline-assets.sh
 ```
 
-## Opus（Dropbox）運用フォーマット
+`npm run dev` の `predev` ではこれらが自動実行されます。
+
+## Opus 運用フォーマット
 
 `opus/youtube-link.md` は以下フォーマットで管理（`type` は自動で `movie`）:
 
@@ -99,7 +55,7 @@ id | title | url | date
 - `src/data/article/**/*.md`, `src/data/timeline/**/*.md` 内で Obsidian 埋め込みを利用可能
   - 例: `![[sample.png]]`, `![[movie.mp4]]`
 - 実ファイルは各 `data/`（記事・Opus 共通）や、タイムラインの日付フォルダ付近の `data/` に配置
-- 同期後に以下スクリプトで自動変換
+- 必要に応じて以下スクリプトで自動変換
   - Article: `scripts/normalize-article-assets.sh`（画像→webp, 動画→webm）
   - Timeline: `scripts/normalize-timeline-assets.sh`（画像→webp, 動画→webm）
 - 変換後は埋め込み参照も自動で `webp/webm` 側へ更新
@@ -133,4 +89,4 @@ npm run build
 ## 本番デプロイ
 
 - `main` へ push（または Actions の `workflow_dispatch`）
-- Actions 内で Dropbox 同期 → build → GitHub Pages 配信
+- Actions でメディア正規化 → `npm run build` → GitHub Pages へ配信

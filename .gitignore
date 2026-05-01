@@ -16,8 +16,3 @@ Thumbs.db
 __pycache__/
 *.pyc
 *.tsbuildinfo
-
-# Dropbox 同期する本文（正本は Dropbox 側。必要なら空ディレクトリ用に -f で .gitkeep をコミット）
-src/data/article/
-src/data/opus/
-src/data/timeline/

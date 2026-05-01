@@ -39,14 +39,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Fetch article/opus/timeline from Dropbox
-        env:
-          DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
-          DROPBOX_ARTICLE_PATH: ${{ secrets.DROPBOX_ARTICLE_PATH }}
-          DROPBOX_OPUS_PATH: ${{ secrets.DROPBOX_OPUS_PATH }}
-          DROPBOX_TIMELINE_PATH: ${{ secrets.DROPBOX_TIMELINE_PATH }}
-        run: python3 scripts/fetch-dropbox-content.py
-
       - name: Normalize article assets to webp/webm
         run: bash scripts/normalize-article-assets.sh
 
@@ -55,19 +47,6 @@ jobs:
 
       - name: Normalize timeline assets to webp/webm
         run: bash scripts/normalize-timeline-assets.sh
-
-      - name: Verify opus assets
-        run: |
-          echo "Opus content files:"
-          ls -la src/data/opus || true
-          echo ""
-          echo "Opus asset files:"
-          ls -la src/data/opus/data || true
-          count=$(ls -1 src/data/opus/data 2>/dev/null | wc -l | tr -d ' ')
-          if [ "${count:-0}" -eq 0 ]; then
-            echo "ERROR: No opus assets were synced to src/data/opus/data" >&2
-            exit 1
-          fi
 
       - name: Build
         run: npm run build
