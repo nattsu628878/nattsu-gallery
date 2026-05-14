@@ -188,10 +188,12 @@ export function parseOpusMarkdownFiles(
     if (!IMAGE_EXTENSIONS.has(ext)) continue;
     const id = file.replace(/\.[^.]+$/i, "");
     if (!id || usedIds.has(id)) continue;
+    const originalFile = rel.split("/").pop() || rel;
+    const title = originalFile.replace(/\.[^.]+$/i, "") || undefined;
     const imageUrl = resolveAssetUrl(assetMap, id) || entry.url;
     items.push({
       id,
-      title: undefined,
+      title,
       type: "picture",
       date: inferDateFromId(id),
       thumbnail: imageUrl,
