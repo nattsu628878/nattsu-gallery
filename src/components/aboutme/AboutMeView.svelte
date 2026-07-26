@@ -28,36 +28,68 @@
 
   const projects = [
     {
+      title: 'nattsu-explorer',
+      description: 'Nationwide interactive map & GPS photo viewer',
+      tags: ['Map', 'Photo', 'Astro'],
+      status: 'Completed',
+      href: 'https://nattsu628878.github.io/nattsu-explorer/',
+      repoHref: 'https://github.com/nattsu628878/nattsu-explorer'
+    },
+    {
       title: 'nattsu-gallery',
-      description: 'Personal portfolio and creative archive',
-      tags: ['Portfolio'],
-      status: 'WIP',
+      description: 'Personal portfolio, creative archive & project hub',
+      tags: ['Portfolio', 'Astro', 'Svelte'],
+      status: 'Active',
       href: 'https://nattsu628878.github.io/nattsu-gallery/',
       repoHref: 'https://github.com/nattsu628878/nattsu-gallery'
     },
     {
+      title: 'synth-builder',
+      description: 'Node-based synth design playground & DSP instrument',
+      tags: ['Rust', 'Bevy', 'Audio'],
+      status: 'In Progress',
+      href: '#',
+      repoHref: 'https://github.com/nattsu628878/synth-builder'
+    },
+    {
       title: 'web-synth',
-      description: 'Browser-based modular synth',
+      description: 'Browser-based modular synthesizer',
       tags: ['Web Audio', 'Synth'],
       status: 'Completed',
       href: 'https://nattsu628878.github.io/web-synth/',
       repoHref: 'https://github.com/nattsu628878/web-synth'
     },
     {
-      title: 'synth-builder',
-      description: 'Node-based synth design playground',
-      tags: ['Audio', 'Game'],
-      status: 'Concept',
-      href: '#',
-      repoHref: ''
+      title: 'web-rhythm',
+      description: 'Browser-based rhythm machine and metronome',
+      tags: ['Web Audio', 'Rhythm'],
+      status: 'Completed',
+      href: 'https://nattsu628878.github.io/web-rhythm/',
+      repoHref: 'https://github.com/nattsu628878/web-rhythm'
     },
     {
       title: 'music-visualizer',
-      description: 'Visualization of audio and MIDI',
+      description: 'Real-time audio & MIDI visualization engine',
       tags: ['Visual', 'Audio'],
-      status: 'Concept',
+      status: 'In Progress',
       href: '#',
       repoHref: 'https://github.com/nattsu628878/music-visualizer'
+    },
+    {
+      title: 'arch-dashboard',
+      description: 'Systemd & resource management dashboard for Arch Linux',
+      tags: ['Arch Linux', 'System'],
+      status: 'Active',
+      href: '#',
+      repoHref: 'https://github.com/nattsu628878/arch-dashboard'
+    },
+    {
+      title: 'ear-transcription-vst',
+      description: 'Ear training & audio transcription VST plugin',
+      tags: ['VST', 'DSP', 'Rust'],
+      status: 'In Progress',
+      href: '#',
+      repoHref: 'https://github.com/nattsu628878/ear-transcription-vst'
     },
     {
       title: 'sound-effect-studio',

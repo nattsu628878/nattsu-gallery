@@ -145,10 +145,17 @@
   flex-shrink: 0;
 }
 
-.project-status.status-wip {
+.project-status.status-wip,
+.project-status.status-active {
   color: #628878;
   background: #edf5f1;
   border-color: #c8dbd3;
+}
+
+.project-status.status-in-progress {
+  color: #2b6cb0;
+  background: #ebf8ff;
+  border-color: #bee3f8;
 }
 
 .project-status.status-completed {
