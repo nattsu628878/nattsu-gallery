@@ -85,6 +85,31 @@
   text-decoration-color: #c8d8d1;
 }
 
+.about-activity-section {
+  margin-top: 0.85rem;
+}
+
+.about-activity-section h3 {
+  color: var(--accent);
+  font-size: 0.84rem;
+  margin-bottom: 0.45rem;
+}
+
+.activity-graph-link {
+  display: block;
+  border: 1px solid #e6e6e6;
+  border-radius: 6px;
+  padding: 0.6rem;
+  overflow-x: auto;
+}
+
+.activity-graph {
+  display: block;
+  width: 100%;
+  min-width: 480px;
+  height: auto;
+}
+
 .about-projects {
   margin-top: 1rem;
 }

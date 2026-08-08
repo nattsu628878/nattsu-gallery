@@ -189,6 +189,20 @@
         </div>
       </div>
 
+      <div class="about-activity-section">
+        <h3>GitHub Activity</h3>
+        <a href="https://github.com/nattsu628878" target="_blank" rel="noopener noreferrer" class="activity-graph-link">
+          <img
+            class="activity-graph"
+            src="https://ghchart.rshah.org/628878/nattsu628878"
+            alt="nattsu628878のGitHub contributionグラフ"
+            loading="lazy"
+            width="732"
+            height="112"
+          />
+        </a>
+      </div>
+
       <div class="about-projects">
         <h3>Projects</h3>
         <div class="projects-grid">
